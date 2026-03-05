@@ -7,6 +7,7 @@ import CurrentWeather from './components/CurrentWeather';
 import HourlyForecast from './components/HourlyForecast';
 import DailyForecast from './components/DailyForecast';
 import WeatherDetails from './components/WeatherDetails';
+import About from './components/About';
 
 function App() {
     const [lang, setLang] = useState('zh');
@@ -239,6 +240,8 @@ function App() {
                 <DailyForecast daily={data?.daily} t={t} lang={lang} />
 
                 {data && <WeatherDetails current={data.current} daily={data.daily} t={t} />}
+
+                <About t={t} />
             </main>
         </div>
     );

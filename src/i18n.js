@@ -18,7 +18,11 @@ export const translations = {
         uvHigh: "High",
         uvModerate: "Moderate",
         uvLow: "Low",
-        updatedAt: "Updated at"
+        updatedAt: "Updated at",
+        about: "About",
+        description: "A premium weather app inspired by Breezy Weather, built with React and Open-Meteo API.",
+        dataSource: "Data Source",
+        developer: "Developer"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -37,7 +41,11 @@ export const translations = {
         failedFetch: "無法取得天氣資料。",
         cannotFind: "找不到城市：",
         uvLow: "低",
-        updatedAt: "更新時間"
+        updatedAt: "更新時間",
+        about: "關於",
+        description: "由 React 與 Open-Meteo API 打造的質感天氣應用程式，深受 Breezy Weather 啟發。",
+        dataSource: "資料來源",
+        developer: "開發者"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -56,7 +64,11 @@ export const translations = {
         failedFetch: "无法获取天气数据。",
         cannotFind: "找不到城市：",
         uvLow: "低",
-        updatedAt: "更新时间"
+        updatedAt: "更新时间",
+        about: "关于",
+        description: "由 React 與 Open-Meteo API 打造的質感天气应用程式，深受 Breezy Weather 启发。",
+        dataSource: "资料来源",
+        developer: "开发者"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -77,7 +89,11 @@ export const translations = {
         uvHigh: "高",
         uvModerate: "中",
         uvLow: "低",
-        updatedAt: "更新時間"
+        updatedAt: "更新時間",
+        about: "について",
+        description: "ReactとOpen-Meteo APIで構築された、Breezy Weatherにインスパイアされたプレミアムな天気アプリです。",
+        dataSource: "データソース",
+        developer: "開發者"
     }
 };
 
