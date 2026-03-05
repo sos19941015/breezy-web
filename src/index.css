@@ -1,0 +1,324 @@
+:root {
+    /* Material 3 Inspired Core Colors - Dark Mode Default */
+    --md-sys-color-background: #121212;
+    --md-sys-color-on-background: #e2e2e9;
+
+    --md-sys-color-surface: #1e1e1e;
+    --md-sys-color-surface-variant: #2b2930;
+    --md-sys-color-on-surface: #e2e2e9;
+    --md-sys-color-on-surface-variant: #c4c6cf;
+
+    --md-sys-color-primary: #a8c7fa;
+    --md-sys-color-on-primary: #062e6f;
+    --md-sys-color-primary-container: #004a77;
+    --md-sys-color-on-primary-container: #c2e7ff;
+
+    /* Weather Specific Colors */
+    --weather-color-sun: #ffd04f;
+    --weather-color-rain: #62a0ea;
+    --weather-color-cloud: #9e9e9e;
+    --weather-color-snow: #ffffff;
+
+    /* Typography */
+    --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    /* Shapes & Metrics */
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-large: 16px;
+    --md-sys-shape-corner-medium: 12px;
+
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
+
+/* Light Mode Support (Optional Toggle) */
+@media (prefers-color-scheme: light) {
+    :root {
+        --md-sys-color-background: #fdfbff;
+        --md-sys-color-on-background: #1a1c1e;
+
+        --md-sys-color-surface: #fdfbff;
+        --md-sys-color-surface-variant: #e1e2e8;
+        --md-sys-color-on-surface: #1a1c1e;
+        --md-sys-color-on-surface-variant: #43474e;
+
+        --md-sys-color-primary: #0061a4;
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: #d1e4ff;
+        --md-sys-color-on-primary-container: #001d36;
+    }
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#root {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+    /* Mobile first approach centered */
+    margin: 0 auto;
+    width: 100%;
+    padding: var(--spacing-md);
+}
+
+/* Utility Classes */
+.card {
+    background-color: var(--md-sys-color-surface-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Base interactive element style */
+button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    border-radius: var(--md-sys-shape-corner-medium);
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+    button:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+}
+
+/* Horizontal scroll container */
+.horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+/* Scroll Buttons for Hourly Forecast */
+.scroll-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.scroll-btn:hover {
+    background-color: var(--md-sys-color-outline-variant);
+}
+
+.scroll-btn:active {
+    transform: scale(0.95);
+}
+
+/* Search Dropdown Styles */
+.search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: var(--spacing-xs);
+    background-color: var(--md-sys-color-surface);
+    border-radius: var(--md-sys-shape-corner-medium);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    z-index: 20;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-result-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: transparent;
+    border-radius: 0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    text-align: left;
+    width: 100%;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+/* Typography Helpers */
+.text-display {
+    font-size: 4rem;
+    font-weight: 300;
+    line-height: 1.1;
+}
+
+.text-headline {
+    font-size: 2rem;
+    font-weight: 400;
+}
+
+.text-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.text-body {
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.text-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Loading Skeleton Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, var(--md-sys-color-surface-variant) 25%, var(--md-sys-color-surface) 50%, var(--md-sys-color-surface-variant) 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+    border-radius: var(--md-sys-shape-corner-medium);
+    min-height: 1em;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Dynamic Weather Backgrounds */
+.weather-bg-clear-day {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #ffffff;
+}
+
+.weather-bg-clear-night {
+    background: linear-gradient(135deg, #141e30 0%, #243b55 100%);
+    color: #ffffff;
+}
+
+.weather-bg-cloudy {
+    background: linear-gradient(135deg, #8e9eab 0%, #eef2f3 100%);
+    color: #1a1c1e;
+}
+
+@media (prefers-color-scheme: dark) {
+    .weather-bg-cloudy {
+        background: linear-gradient(135deg, #3a404d 0%, #5c6873 100%);
+        color: #ffffff;
+    }
+}
+
+.weather-bg-rain {
+    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
+    color: #ffffff;
+}
+
+.weather-bg-snow {
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+    color: #1a1c1e;
+}
+
+@media (prefers-color-scheme: dark) {
+    .weather-bg-snow {
+        background: linear-gradient(135deg, #757f9a 0%, #d7dde8 100%);
+        color: #ffffff;
+    }
+}
+
+.weather-bg-thunder {
+    background: linear-gradient(135deg, #373b44 0%, #4286f4 100%);
+    color: #ffffff;
+}
+
+/* Ensure text elements within dynamic backgrounds read properly */
+.weather-bg-clear-day .text-display,
+.weather-bg-clear-day .text-title,
+.weather-bg-clear-day .text-body,
+.weather-bg-clear-night .text-display,
+.weather-bg-clear-night .text-title,
+.weather-bg-clear-night .text-body,
+.weather-bg-rain .text-display,
+.weather-bg-rain .text-title,
+.weather-bg-rain .text-body,
+.weather-bg-thunder .text-display,
+.weather-bg-thunder .text-title,
+.weather-bg-thunder .text-body,
+.weather-bg-snow .text-display,
+.weather-bg-snow .text-title,
+.weather-bg-snow .text-body {
+    color: inherit !important;
+}
+
+.weather-bg-clear-day>div>div,
+/* The "updated at" and high/low text */
+.weather-bg-clear-night>div>div,
+.weather-bg-rain>div>div,
+.weather-bg-thunder>div>div {
+    color: rgba(255, 255, 255, 0.85) !important;
+}

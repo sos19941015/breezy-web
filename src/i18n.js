@@ -1,0 +1,121 @@
+export const translations = {
+    en: {
+        searchPlaceholder: "Search city...",
+        cancel: "Cancel",
+        hourlyForecast: "Hourly Forecast",
+        now: "Now",
+        sevenDayForecast: "7-Day Forecast",
+        today: "Today",
+        wind: "Wind",
+        humidity: "Humidity",
+        uvIndex: "UV Index",
+        feelsLike: "Feels Like",
+        high: "H",
+        low: "L",
+        locating: "Locating...",
+        failedFetch: "Failed to fetch weather data.",
+        cannotFind: "Cannot find city:",
+        uvHigh: "High",
+        uvModerate: "Moderate",
+        uvLow: "Low",
+        updatedAt: "Updated at"
+    },
+    zh: {
+        searchPlaceholder: "搜尋城市...",
+        cancel: "取消",
+        hourlyForecast: "每小時預報",
+        now: "現在",
+        sevenDayForecast: "7天預報",
+        today: "今天",
+        wind: "風速",
+        humidity: "濕度",
+        uvIndex: "紫外線指數",
+        feelsLike: "體感溫度",
+        high: "最高",
+        low: "最低",
+        locating: "定位中...",
+        failedFetch: "無法取得天氣資料。",
+        cannotFind: "找不到城市：",
+        uvLow: "低",
+        updatedAt: "更新時間"
+    },
+    'zh-CN': {
+        searchPlaceholder: "搜索城市...",
+        cancel: "取消",
+        hourlyForecast: "每小时预报",
+        now: "现在",
+        sevenDayForecast: "7天预报",
+        today: "今天",
+        wind: "风速",
+        humidity: "湿度",
+        uvIndex: "紫外线指数",
+        feelsLike: "体感温度",
+        high: "最高",
+        low: "最低",
+        locating: "定位中...",
+        failedFetch: "无法获取天气数据。",
+        cannotFind: "找不到城市：",
+        uvLow: "低",
+        updatedAt: "更新时间"
+    },
+    ja: {
+        searchPlaceholder: "都市を検索...",
+        cancel: "キャンセル",
+        hourlyForecast: "時間別予報",
+        now: "現在",
+        sevenDayForecast: "7日間予報",
+        today: "今日",
+        wind: "風速",
+        humidity: "湿度",
+        uvIndex: "UV指数",
+        feelsLike: "体感温度",
+        high: "最高",
+        low: "最低",
+        locating: "位置特定中...",
+        failedFetch: "天気データの取得に失敗しました。",
+        cannotFind: "都市が見つかりません:",
+        uvHigh: "高",
+        uvModerate: "中",
+        uvLow: "低",
+        updatedAt: "更新時間"
+    }
+};
+
+export const weatherConditions = {
+    en: {
+        0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+        45: 'Fog', 48: 'Depositing rime fog',
+        51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle',
+        61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain',
+        71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall',
+        80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers',
+        95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail'
+    },
+    zh: {
+        0: '晴朗', 1: '晴時多雲', 2: '多雲', 3: '陰天',
+        45: '霧', 48: '霧淞',
+        51: '微雨', 53: '毛毛雨', 55: '大毛毛雨',
+        61: '小雨', 63: '中雨', 65: '大雨',
+        71: '小雪', 73: '中雪', 75: '大雪',
+        80: '陣雨', 81: '強陣雨', 82: '暴陣雨',
+        95: '雷雨', 96: '雷雨伴冰雹', 99: '強雷雨伴冰雹'
+    },
+    'zh-CN': {
+        0: '晴朗', 1: '晴时多云', 2: '多云', 3: '阴天',
+        45: '雾', 48: '雾凇',
+        51: '微雨', 53: '毛毛雨', 55: '大毛毛雨',
+        61: '小雨', 63: '中雨', 65: '大雨',
+        71: '小雪', 73: '中雪', 75: '大雪',
+        80: '阵雨', 81: '强阵雨', 82: '暴阵雨',
+        95: '雷雨', 96: '雷雨伴冰雹', 99: '强雷雨伴冰雹'
+    },
+    ja: {
+        0: '快晴', 1: '晴れ', 2: '晴れ時々曇り', 3: '曇り',
+        45: '霧', 48: '着氷性霧',
+        51: '小雨', 53: '霧雨', 55: '強い霧雨',
+        61: '弱い雨', 63: '適度な雨', 65: '強い雨',
+        71: '弱い雪', 73: '適度な雪', 75: '大雪',
+        80: '弱い陣雨', 81: '適度な陣雨', 82: '激しい陣雨',
+        95: '雷雨', 96: 'わずかな雹を伴う雷雨', 99: '激しい雹を伴う雷雨'
+    }
+};
