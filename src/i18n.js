@@ -24,7 +24,11 @@ export const translations = {
         dataSource: "Data Source",
         developer: "Developer",
         currentLocation: "Current Location",
-        locatingGPS: "Getting GPS..."
+        locatingGPS: "Getting GPS...",
+        favorites: "Favorites",
+        addToFavorites: "Add to Favorites",
+        removeFromFavorites: "Remove from Favorites",
+        noFavorites: "No saved locations yet"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -49,7 +53,11 @@ export const translations = {
         dataSource: "資料來源",
         developer: "開發者",
         currentLocation: "我的位置",
-        locatingGPS: "定位中..."
+        locatingGPS: "定位中...",
+        favorites: "我的最愛",
+        addToFavorites: "加入最愛",
+        removeFromFavorites: "移除最愛",
+        noFavorites: "尚未儲存任何地點"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -74,7 +82,11 @@ export const translations = {
         dataSource: "资料来源",
         developer: "开发者",
         currentLocation: "我的位置",
-        locatingGPS: "定位中..."
+        locatingGPS: "定位中...",
+        favorites: "我的收藏",
+        addToFavorites: "加入收藏",
+        removeFromFavorites: "移除收藏",
+        noFavorites: "尚未储存任何地点"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -101,7 +113,11 @@ export const translations = {
         dataSource: "データソース",
         developer: "開發者",
         currentLocation: "現在地",
-        locatingGPS: "GPSを取得中..."
+        locatingGPS: "GPSを取得中...",
+        favorites: "お気に入り",
+        addToFavorites: "お気に入りに追加",
+        removeFromFavorites: "お気に入りから削除",
+        noFavorites: "保存された場所はまだありません"
     }
 };
 

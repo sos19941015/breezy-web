@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, RefreshCw, AlertCircle, Globe, Navigation } from 'lucide-react';
+import { Search, MapPin, RefreshCw, AlertCircle, Globe, Navigation, Star } from 'lucide-react';
 import { fetchWeather, fetchCityByIP, geocodeCity, reverseGeocode } from './api/weather';
 import { translations } from './i18n';
 
@@ -8,6 +8,7 @@ import HourlyForecast from './components/HourlyForecast';
 import DailyForecast from './components/DailyForecast';
 import WeatherDetails from './components/WeatherDetails';
 import About from './components/About';
+import Favorites from './components/Favorites';
 
 function App() {
     const [lang, setLang] = useState('zh');
@@ -21,6 +22,15 @@ function App() {
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [error, setError] = useState(null);
+
+    // Favorites from localStorage
+    const [favorites, setFavorites] = useState(() => {
+        try {
+            const saved = localStorage.getItem('breezy-favorites');
+            return saved ? JSON.parse(saved) : [];
+        } catch { return []; }
+    });
+    const [currentCoords, setCurrentCoords] = useState(null);
 
     const languages = [
         { code: 'zh', name: '繁體中文', flag: 'https://flagcdn.com/w40/tw.png', alt: 'Taiwan' },
@@ -41,6 +51,7 @@ function App() {
         if (weatherData) {
             setData(weatherData);
             setLocationName(name);
+            setCurrentCoords({ lat, lon, name });
         } else {
             setError(t.failedFetch);
         }
@@ -153,6 +164,38 @@ function App() {
         }
     };
 
+    // Favorites functions
+    const saveFavorites = (newFavs) => {
+        setFavorites(newFavs);
+        localStorage.setItem('breezy-favorites', JSON.stringify(newFavs));
+    };
+
+    const isFavorite = () => {
+        if (!currentCoords) return false;
+        return favorites.some(f => Math.abs(f.lat - currentCoords.lat) < 0.01 && Math.abs(f.lon - currentCoords.lon) < 0.01);
+    };
+
+    const toggleFavorite = () => {
+        if (!currentCoords || !locationName) return;
+        if (isFavorite()) {
+            const newFavs = favorites.filter(f => !(Math.abs(f.lat - currentCoords.lat) < 0.01 && Math.abs(f.lon - currentCoords.lon) < 0.01));
+            saveFavorites(newFavs);
+        } else {
+            const newFav = { lat: currentCoords.lat, lon: currentCoords.lon, name: locationName, admin1: data?.admin1 || '', country: data?.country || '' };
+            saveFavorites([...favorites, newFav]);
+        }
+    };
+
+    const handleSelectFavorite = async (fav) => {
+        await loadWeatherForCoords(fav.lat, fav.lon, fav.name);
+    };
+
+    const handleRemoveFavorite = (idx) => {
+        const newFavs = [...favorites];
+        newFavs.splice(idx, 1);
+        saveFavorites(newFavs);
+    };
+
     return (
         <div className="app-container">
             {/* Header */}
@@ -188,6 +231,19 @@ function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
                             <MapPin size={28} color="var(--md-sys-color-primary)" />
                             <h1 className="text-title" style={{ fontSize: '1.75rem', fontWeight: 600 }}>{locationName}</h1>
+                            <button
+                                onClick={toggleFavorite}
+                                title={isFavorite() ? t.removeFromFavorites : t.addToFavorites}
+                                style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'transform 0.2s ease' }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                <Star
+                                    size={22}
+                                    color={isFavorite() ? '#f59e0b' : 'var(--md-sys-color-on-surface-variant)'}
+                                    fill={isFavorite() ? '#f59e0b' : 'none'}
+                                />
+                            </button>
                         </div>
                         <div style={{ display: 'flex', gap: 'var(--spacing-sm)', position: 'relative' }} className="lang-menu-container">
                             <button
@@ -270,6 +326,13 @@ function App() {
                 <DailyForecast daily={data?.daily} t={t} lang={lang} />
 
                 {data && <WeatherDetails current={data.current} daily={data.daily} t={t} />}
+
+                <Favorites
+                    favorites={favorites}
+                    onSelect={handleSelectFavorite}
+                    onRemove={handleRemoveFavorite}
+                    t={t}
+                />
 
                 <About t={t} />
             </main>
