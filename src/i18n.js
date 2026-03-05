@@ -22,7 +22,9 @@ export const translations = {
         about: "About",
         description: "A premium weather app inspired by Breezy Weather, built with React and Open-Meteo API.",
         dataSource: "Data Source",
-        developer: "Developer"
+        developer: "Developer",
+        currentLocation: "Current Location",
+        locatingGPS: "Getting GPS..."
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -45,7 +47,9 @@ export const translations = {
         about: "關於",
         description: "由 React 與 Open-Meteo API 打造的質感天氣應用程式，深受 Breezy Weather 啟發。",
         dataSource: "資料來源",
-        developer: "開發者"
+        developer: "開發者",
+        currentLocation: "我的位置",
+        locatingGPS: "定位中..."
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -68,7 +72,9 @@ export const translations = {
         about: "关于",
         description: "由 React 與 Open-Meteo API 打造的質感天气应用程式，深受 Breezy Weather 启发。",
         dataSource: "资料来源",
-        developer: "开发者"
+        developer: "开发者",
+        currentLocation: "我的位置",
+        locatingGPS: "定位中..."
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -93,7 +99,9 @@ export const translations = {
         about: "について",
         description: "ReactとOpen-Meteo APIで構築された、Breezy Weatherにインスパイアされたプレミアムな天気アプリです。",
         dataSource: "データソース",
-        developer: "開發者"
+        developer: "開發者",
+        currentLocation: "現在地",
+        locatingGPS: "GPSを取得中..."
     }
 };
 
