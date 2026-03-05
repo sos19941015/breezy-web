@@ -81,6 +81,17 @@ export const geocodeCity = async (cityName, lang = 'zh') => {
     }
 };
 
+export const reverseGeocode = async (lat, lon, lang = 'en') => {
+    try {
+        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${lang}`);
+        const data = await response.json();
+        return data.city || data.locality || data.principalSubdivision || null;
+    } catch (error) {
+        console.error("Failed to reverse geocode:", error);
+        return null;
+    }
+};
+
 export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
     // Default is Taipei City
     const params = new URLSearchParams({

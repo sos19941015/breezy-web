@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, RefreshCw, AlertCircle, Globe } from 'lucide-react';
-import { fetchWeather, fetchCityByIP, geocodeCity } from './api/weather';
+import { Search, MapPin, RefreshCw, AlertCircle, Globe, Navigation } from 'lucide-react';
+import { fetchWeather, fetchCityByIP, geocodeCity, reverseGeocode } from './api/weather';
 import { translations } from './i18n';
 
 import CurrentWeather from './components/CurrentWeather';
@@ -85,6 +85,33 @@ function App() {
         setSearchQuery('');
         await loadWeatherForCoords(city.lat, city.lon, city.name);
     };
+
+    const handleLocateUser = () => {
+        if (!navigator.geolocation) {
+            setError("Geolocation is not supported by your browser");
+            return;
+        }
+
+        setLoading(true);
+        setLocationName(t.locatingGPS || t.locating);
+        setError(null);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                const cityName = await reverseGeocode(latitude, longitude, lang) || t.currentLocation;
+                await loadWeatherForCoords(latitude, longitude, cityName);
+            },
+            (err) => {
+                console.warn(err);
+                setError("Unable to retrieve your location.");
+                setLoading(false);
+                setLocationName(data?.name || fallbackCoords.name);
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+        );
+    };
+
 
     useEffect(() => {
         initApp();
@@ -207,6 +234,9 @@ function App() {
                                 </div>
                             )}
 
+                            <button style={{ padding: '8px' }} aria-label="Locate Me" onClick={handleLocateUser} title="Locate Me">
+                                <Navigation size={24} />
+                            </button>
                             <button style={{ padding: '8px' }} aria-label="Refresh" onClick={() => loadWeatherForCoords(data?.latitude || fallbackCoords.lat, data?.longitude || fallbackCoords.lon, locationName)}>
                                 <RefreshCw size={24} className={loading ? "spin" : ""} style={{ transition: 'transform 0.3s ease' }} />
                             </button>
