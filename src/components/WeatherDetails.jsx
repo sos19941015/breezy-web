@@ -120,9 +120,10 @@ export default function WeatherDetails({ current, daily, t }) {
     const windSpeed = current.wind_speed_10m || 0;
     const windAnimDuration = Math.max(0.5, 3 - (windSpeed * 0.05));
     // wind_direction_10m is the direction wind originates from. 
-    // To show where it goes, we add 180 degrees. Navigation icon points UP natively (0 deg).
+    // Navigation icon natively points to Top-Right (45 deg).
+    // Arrow should point to windDir + 180. To offset the native 45deg: windDir + 180 - 45 = windDir + 135
     const windDir = current.wind_direction_10m || 0;
-    const windArrowRotation = (windDir + 180) % 360;
+    const windArrowRotation = (windDir + 135) % 360;
 
     // Helper rendering function for cards
     const renderCardValueBar = (val, maxVal, color) => {
@@ -141,7 +142,7 @@ export default function WeatherDetails({ current, daily, t }) {
                     0% { transform: translateX(-50px); opacity: 0; }
                     20% { opacity: 0.8; }
                     80% { opacity: 0.8; }
-                    100% { transform: translateX(250px); opacity: 0; }
+                    100% { transform: translateX(350px); opacity: 0; }
                 }
                 .wind-line {
                     position: absolute;
