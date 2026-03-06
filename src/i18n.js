@@ -35,6 +35,9 @@ export const translations = {
         pm25Poor: "Poor",
         sunrise: "Sunrise",
         sunset: "Sunset",
+        tempHot: "Hot",
+        tempCold: "Cold",
+        tempComfortable: "Comfortable",
         developerName: "Rex"
     },
     zh: {
@@ -71,6 +74,9 @@ export const translations = {
         pm25Poor: "不良",
         sunrise: "日出",
         sunset: "日落",
+        tempHot: "炎熱",
+        tempCold: "寒冷",
+        tempComfortable: "舒適",
         developerName: "Rex"
     },
     'zh-CN': {
@@ -107,6 +113,9 @@ export const translations = {
         pm25Poor: "不良",
         sunrise: "日出",
         sunset: "日落",
+        tempHot: "炎热",
+        tempCold: "寒冷",
+        tempComfortable: "舒适",
         developerName: "Rex"
     },
     ja: {
@@ -145,6 +154,9 @@ export const translations = {
         pm25Poor: "悪い",
         sunrise: "日の出",
         sunset: "日の入り",
+        tempHot: "暑い",
+        tempCold: "寒い",
+        tempComfortable: "快適",
         developerName: "Rex"
     }
 };

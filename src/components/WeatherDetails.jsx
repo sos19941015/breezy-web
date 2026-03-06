@@ -244,7 +244,7 @@ export default function WeatherDetails({ current, daily, t }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <p className="text-headline" style={{ color: getTempColor(current.apparent_temperature) }}>{Math.round(current.apparent_temperature)}°</p>
                     <p className="text-body" style={{ color: getTempColor(current.apparent_temperature), fontWeight: 500, marginBottom: '4px' }}>
-                        {current.apparent_temperature >= 33 ? 'Hot' : current.apparent_temperature < 10 ? 'Cold' : 'Comfortable'}
+                        {current.apparent_temperature >= 33 ? (t.tempHot || 'Hot') : current.apparent_temperature < 10 ? (t.tempCold || 'Cold') : (t.tempComfortable || 'Comfortable')}
                     </p>
                 </div>
                 {/* Scale from -10 to 40 for feel-like progress. span = 50 */}
