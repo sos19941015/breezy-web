@@ -38,6 +38,9 @@ export const translations = {
         tempHot: "Hot",
         tempCold: "Cold",
         tempComfortable: "Comfortable",
+        humDry: "Dry",
+        humComfortable: "Comfortable",
+        humWet: "Humid",
         developerName: "Rex"
     },
     zh: {
@@ -77,6 +80,9 @@ export const translations = {
         tempHot: "炎熱",
         tempCold: "寒冷",
         tempComfortable: "舒適",
+        humDry: "乾燥",
+        humComfortable: "舒適",
+        humWet: "潮濕",
         developerName: "Rex"
     },
     'zh-CN': {
@@ -116,6 +122,9 @@ export const translations = {
         tempHot: "炎热",
         tempCold: "寒冷",
         tempComfortable: "舒适",
+        humDry: "干燥",
+        humComfortable: "舒适",
+        humWet: "潮湿",
         developerName: "Rex"
     },
     ja: {
@@ -157,6 +166,9 @@ export const translations = {
         tempHot: "暑い",
         tempCold: "寒い",
         tempComfortable: "快適",
+        humDry: "乾燥",
+        humComfortable: "快適",
+        humWet: "湿潤",
         developerName: "Rex"
     }
 };

@@ -216,7 +216,12 @@ export default function WeatherDetails({ current, daily, t }) {
                     <Droplets size={20} color={getHumidityColor(current.relative_humidity_2m)} />
                     <span className="text-label">{t.humidity}</span>
                 </div>
-                <p className="text-headline">{current.relative_humidity_2m}%</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <p className="text-headline">{current.relative_humidity_2m}%</p>
+                    <p className="text-body" style={{ color: getHumidityColor(current.relative_humidity_2m), fontWeight: 500, marginBottom: '4px' }}>
+                        {current.relative_humidity_2m >= 65 ? (t.humWet || 'Humid') : current.relative_humidity_2m <= 30 ? (t.humDry || 'Dry') : (t.humComfortable || 'Comfortable')}
+                    </p>
+                </div>
                 {renderCardValueBar(current.relative_humidity_2m, 100, getHumidityColor(current.relative_humidity_2m))}
             </section>
 
