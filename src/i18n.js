@@ -29,6 +29,12 @@ export const translations = {
         addToFavorites: "Add to Favorites",
         removeFromFavorites: "Remove from Favorites",
         noFavorites: "No saved locations yet",
+        pm25: "PM2.5",
+        pm25Good: "Good",
+        pm25Moderate: "Moderate",
+        pm25Poor: "Poor",
+        sunrise: "Sunrise",
+        sunset: "Sunset",
         developerName: "Rex"
     },
     zh: {
@@ -59,6 +65,12 @@ export const translations = {
         addToFavorites: "加入最愛",
         removeFromFavorites: "移除最愛",
         noFavorites: "尚未儲存任何地點",
+        pm25: "PM2.5",
+        pm25Good: "良好",
+        pm25Moderate: "普通",
+        pm25Poor: "不良",
+        sunrise: "日出",
+        sunset: "日落",
         developerName: "Rex"
     },
     'zh-CN': {
@@ -89,6 +101,12 @@ export const translations = {
         addToFavorites: "加入收藏",
         removeFromFavorites: "移除收藏",
         noFavorites: "尚未储存任何地点",
+        pm25: "PM2.5",
+        pm25Good: "良好",
+        pm25Moderate: "普通",
+        pm25Poor: "不良",
+        sunrise: "日出",
+        sunset: "日落",
         developerName: "Rex"
     },
     ja: {
@@ -121,6 +139,12 @@ export const translations = {
         addToFavorites: "お気に入りに追加",
         removeFromFavorites: "お気に入りから削除",
         noFavorites: "保存された場所はまだありません",
+        pm25: "PM2.5",
+        pm25Good: "良い",
+        pm25Moderate: "普通",
+        pm25Poor: "悪い",
+        sunrise: "日の出",
+        sunset: "日の入り",
         developerName: "Rex"
     }
 };

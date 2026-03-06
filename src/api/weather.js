@@ -112,16 +112,36 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
         longitude: lon,
         current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m',
         hourly: 'temperature_2m,weather_code,precipitation_probability',
-        daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max',
+        daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset',
+        timezone: 'auto'
+    });
+
+    const aqParams = new URLSearchParams({
+        latitude: lat,
+        longitude: lon,
+        current: 'pm2_5',
         timezone: 'auto'
     });
 
     try {
-        const response = await fetch(`${BASE_URL}?${params.toString()}`);
-        if (!response.ok) {
+        const [weatherRes, aqRes] = await Promise.all([
+            fetch(`${BASE_URL}?${params.toString()}`),
+            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`)
+        ]).catch(() => [null, null]);
+
+        if (!weatherRes || !weatherRes.ok) {
             throw new Error('Weather data fetch failed');
         }
-        const data = await response.json();
+        
+        const data = await weatherRes.json();
+
+        if (aqRes && aqRes.ok) {
+            const aqData = await aqRes.json();
+            if (aqData && aqData.current) {
+                data.current.pm2_5 = aqData.current.pm2_5;
+            }
+        }
+
         return data;
     } catch (error) {
         console.error("Failed to fetch weather:", error);
