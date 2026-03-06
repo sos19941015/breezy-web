@@ -60,16 +60,44 @@ function App() {
 
     const initApp = async () => {
         setLoading(true);
-        let ipCity = await fetchCityByIP();
-        if (ipCity) {
-            const results = await geocodeCity(ipCity, lang);
-            if (results && results.length > 0) {
-                await loadWeatherForCoords(results[0].lat, results[0].lon, results[0].name || ipCity);
-                return;
+
+        const fallbackToIP = async () => {
+            let ipCity = await fetchCityByIP();
+            if (ipCity) {
+                const results = await geocodeCity(ipCity, lang);
+                if (results && results.length > 0) {
+                    await loadWeatherForCoords(results[0].lat, results[0].lon, results[0].name || ipCity);
+                    return;
+                }
+            }
+            // Fallback if IP fails
+            await loadWeatherForCoords(fallbackCoords.lat, fallbackCoords.lon, fallbackCoords.name);
+        };
+
+        if (navigator.geolocation && navigator.permissions) {
+            try {
+                const permission = await navigator.permissions.query({ name: 'geolocation' });
+                if (permission.state === 'granted') {
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            const { latitude, longitude } = position.coords;
+                            const cityName = await reverseGeocode(latitude, longitude, lang) || t.currentLocation;
+                            await loadWeatherForCoords(latitude, longitude, cityName);
+                        },
+                        async (err) => {
+                            console.warn("Geolocation fetch error:", err);
+                            await fallbackToIP();
+                        },
+                        { timeout: 10000, enableHighAccuracy: true }
+                    );
+                    return;
+                }
+            } catch (err) {
+                console.warn(err);
             }
         }
-        // Fallback if IP fails
-        await loadWeatherForCoords(fallbackCoords.lat, fallbackCoords.lon, fallbackCoords.name);
+
+        await fallbackToIP();
     };
 
     const handleSearchSubmit = async (e) => {
