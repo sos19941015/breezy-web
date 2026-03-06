@@ -28,7 +28,8 @@ export const translations = {
         favorites: "Favorites",
         addToFavorites: "Add to Favorites",
         removeFromFavorites: "Remove from Favorites",
-        noFavorites: "No saved locations yet"
+        noFavorites: "No saved locations yet",
+        developerName: "Rex"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -57,7 +58,8 @@ export const translations = {
         favorites: "我的最愛",
         addToFavorites: "加入最愛",
         removeFromFavorites: "移除最愛",
-        noFavorites: "尚未儲存任何地點"
+        noFavorites: "尚未儲存任何地點",
+        developerName: "Rex"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -86,7 +88,8 @@ export const translations = {
         favorites: "我的收藏",
         addToFavorites: "加入收藏",
         removeFromFavorites: "移除收藏",
-        noFavorites: "尚未储存任何地点"
+        noFavorites: "尚未储存任何地点",
+        developerName: "Rex"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -117,7 +120,8 @@ export const translations = {
         favorites: "お気に入り",
         addToFavorites: "お気に入りに追加",
         removeFromFavorites: "お気に入りから削除",
-        noFavorites: "保存された場所はまだありません"
+        noFavorites: "保存された場所はまだありません",
+        developerName: "Rex"
     }
 };
 

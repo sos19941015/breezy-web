@@ -30,7 +30,7 @@ export default function About({ t }) {
                     </div>
                     <div>
                         <p className="text-label" style={{ fontSize: '0.75rem', marginBottom: '2px' }}>{t.developer}</p>
-                        <p className="text-body" style={{ fontWeight: '500' }}>Antigravity AI</p>
+                        <p className="text-body" style={{ fontWeight: '500' }}>{t.developerName}</p>
                     </div>
                 </div>
             </div>
