@@ -16,7 +16,7 @@ export default function About({ t }) {
             <div style={{ display: 'grid', gap: 'var(--spacing-sm)', marginTop: 'var(--spacing-sm)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(168, 199, 250, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Database size={20} color="var(--md-sys-color-primary)" />
+                        <Icons.Database size={20} color="var(--md-sys-color-primary)" />
                     </div>
                     <div>
                         <p className="text-label" style={{ fontSize: '0.75rem', marginBottom: '2px' }}>{t.dataSource}</p>
@@ -26,7 +26,7 @@ export default function About({ t }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(168, 199, 250, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Code size={20} color="var(--md-sys-color-primary)" />
+                        <Icons.Code size={20} color="var(--md-sys-color-primary)" />
                     </div>
                     <div>
                         <p className="text-label" style={{ fontSize: '0.75rem', marginBottom: '2px' }}>{t.developer}</p>
