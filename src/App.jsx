@@ -52,6 +52,7 @@ function App() {
             setData(weatherData);
             setLocationName(name);
             setCurrentCoords({ lat, lon, name });
+            localStorage.setItem('breezy-last-coords', JSON.stringify({ lat, lon, name }));
         } else {
             setError(t.failedFetch);
         }
@@ -60,6 +61,17 @@ function App() {
 
     const initApp = async () => {
         setLoading(true);
+
+        try {
+            const saved = localStorage.getItem('breezy-last-coords');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.lat && parsed.lon) {
+                    await loadWeatherForCoords(parsed.lat, parsed.lon, parsed.name);
+                    return;
+                }
+            }
+        } catch { }
 
         const fallbackToIP = async () => {
             let ipCity = await fetchCityByIP();
