@@ -49,9 +49,9 @@ export const getWeatherCondition = (code, isDay = 1, lang = 'en') => {
 
 export const fetchCityByIP = async () => {
     try {
-        const response = await fetch('http://ip-api.com/json/?fields=status,city');
+        const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
-        if (data.status === 'success' && data.city) {
+        if (data && data.city) {
             return data.city;
         }
         return null;
