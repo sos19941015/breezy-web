@@ -180,7 +180,15 @@ export default function WeatherDetails({ current, daily, t }) {
 
             {/* Wind */}
             <section className="card" style={{ padding: 'var(--spacing-md)', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ '--wind-duration': `${windAnimDuration}s`, position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.5 }}>
+                <div style={{
+                    '--wind-duration': `${windAnimDuration}s`,
+                    position: 'absolute',
+                    inset: '-100px',
+                    pointerEvents: 'none',
+                    opacity: 0.5,
+                    transform: `rotate(${windDir + 90}deg)`,
+                    transformOrigin: 'center'
+                }}>
                     <div className="wind-line" style={{ top: '30%', animationDelay: '0s', width: '40px' }}></div>
                     <div className="wind-line" style={{ top: '60%', animationDelay: `${windAnimDuration * 0.3}s`, width: '25px' }}></div>
                     <div className="wind-line" style={{ top: '80%', animationDelay: `${windAnimDuration * 0.7}s`, width: '45px' }}></div>
