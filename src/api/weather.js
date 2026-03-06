@@ -110,7 +110,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
     const params = new URLSearchParams({
         latitude: lat,
         longitude: lon,
-        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m',
+        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m',
         hourly: 'temperature_2m,weather_code,precipitation_probability',
         daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset',
         timezone: 'auto'
@@ -132,7 +132,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
         if (!weatherRes || !weatherRes.ok) {
             throw new Error('Weather data fetch failed');
         }
-        
+
         const data = await weatherRes.json();
 
         if (aqRes && aqRes.ok) {
