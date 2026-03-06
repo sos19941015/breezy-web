@@ -63,15 +63,17 @@ export const fetchCityByIP = async () => {
 
 export const geocodeCity = async (cityName, lang = 'zh') => {
     try {
-        const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=5&language=${lang}`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&addressdetails=1&accept-language=${lang}&limit=5`, {
+            headers: { 'User-Agent': 'BreezyWeatherApp/1.0' }
+        });
         const data = await response.json();
-        if (data.results && data.results.length > 0) {
-            return data.results.map(result => ({
-                lat: result.latitude,
-                lon: result.longitude,
-                name: result.name,
-                admin1: result.admin1,
-                country: result.country
+        if (data && data.length > 0) {
+            return data.map(result => ({
+                lat: parseFloat(result.lat),
+                lon: parseFloat(result.lon),
+                name: result.name || (result.display_name ? result.display_name.split(',')[0] : 'Unknown'),
+                admin1: result.address?.state || result.address?.county || result.address?.region,
+                country: result.address?.country
             }));
         }
         return null;
@@ -83,9 +85,20 @@ export const geocodeCity = async (cityName, lang = 'zh') => {
 
 export const reverseGeocode = async (lat, lon, lang = 'en') => {
     try {
-        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=${lang}`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=${lang}`, {
+            headers: { 'User-Agent': 'BreezyWeatherApp/1.0' }
+        });
         const data = await response.json();
-        return data.city || data.locality || data.principalSubdivision || null;
+        if (data && data.address) {
+            const a = data.address;
+            const specific = a.amenity || a.building || a.neighbourhood || a.road;
+            const district = a.suburb || a.city_district || a.town || a.village || a.city || a.county;
+            if (specific && district && specific !== district) {
+                return `${district} ${specific}`;
+            }
+            return specific || district || a.state || null;
+        }
+        return null;
     } catch (error) {
         console.error("Failed to reverse geocode:", error);
         return null;
