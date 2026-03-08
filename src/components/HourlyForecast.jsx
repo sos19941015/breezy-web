@@ -97,7 +97,10 @@ export default function HourlyForecast({ hourly, t, lang }) {
                             <Icon size={28} color={condition.color} />
                             <span className="text-title" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 {Math.round(hour.temp)}°
-                                {hour.precipitation > 0 && <span style={{ fontSize: '0.75rem', color: 'var(--weather-color-rain)', marginTop: '2px' }}>{hour.precipitation}%</span>}
+                                <span style={{ fontSize: '0.75rem', color: 'var(--weather-color-rain)', marginTop: '2px', display: 'flex', alignItems: 'center' }}>
+                                    <Icons.Droplets size={12} style={{ marginRight: '2px' }} />
+                                    {hour.precipitation}%
+                                </span>
                             </span>
                         </div>
                     );

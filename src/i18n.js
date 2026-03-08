@@ -41,7 +41,15 @@ export const translations = {
         humDry: "Dry",
         humComfortable: "Comfortable",
         humWet: "Humid",
-        developerName: "Rex"
+        developerName: "Rex",
+        aqi: "Air Quality (AQI)",
+        aqiGood: "Good",
+        aqiFair: "Fair",
+        aqiModerate: "Moderate",
+        aqiPoor: "Poor",
+        aqiVeryPoor: "Very Poor",
+        dewPoint: "Dew Point",
+        astronomy: "Sun & Moon"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -83,7 +91,15 @@ export const translations = {
         humDry: "乾燥",
         humComfortable: "舒適",
         humWet: "潮濕",
-        developerName: "Rex"
+        developerName: "Rex",
+        aqi: "空氣品質 (AQI)",
+        aqiGood: "良好",
+        aqiFair: "尚可",
+        aqiModerate: "普通",
+        aqiPoor: "不良",
+        aqiVeryPoor: "極差",
+        dewPoint: "露點",
+        astronomy: "日出日落與月相"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -125,7 +141,15 @@ export const translations = {
         humDry: "干燥",
         humComfortable: "舒适",
         humWet: "潮湿",
-        developerName: "Rex"
+        developerName: "Rex",
+        aqi: "空气质量 (AQI)",
+        aqiGood: "良好",
+        aqiFair: "尚可",
+        aqiModerate: "普通",
+        aqiPoor: "不良",
+        aqiVeryPoor: "极差",
+        dewPoint: "露点",
+        astronomy: "日出日落与月相"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -169,7 +193,15 @@ export const translations = {
         humDry: "乾燥",
         humComfortable: "快適",
         humWet: "湿潤",
-        developerName: "Rex"
+        developerName: "Rex",
+        aqi: "空気質 (AQI)",
+        aqiGood: "良い",
+        aqiFair: "普通",
+        aqiModerate: "適度",
+        aqiPoor: "悪い",
+        aqiVeryPoor: "非常に悪い",
+        dewPoint: "露点",
+        astronomy: "日の出・日の入りと月相"
     }
 };
 

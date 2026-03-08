@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Droplets, Wind, Sun, Eye, Sunrise, Sunset, Activity, Navigation } from 'lucide-react';
+import { Droplets, Wind, Sun, Moon, Eye, Sunrise, Sunset, Activity, Navigation, Clock, Sparkles } from 'lucide-react';
+import SunCalc from 'suncalc';
 
-export default function WeatherDetails({ current, daily, t }) {
+export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, daily, timezone = 'auto', t, lang = 'zh' }) {
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -18,19 +19,45 @@ export default function WeatherDetails({ current, daily, t }) {
 
     const uvIndex = daily?.uv_index_max?.[0] || 0;
 
-    const formatTime = (isoString) => {
-        if (!isoString) return '--:--';
-        const date = new Date(isoString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const formatTimeOffset = (date, tz) => {
+        try {
+            return new Intl.DateTimeFormat('en-GB', {
+                timeZone: tz === 'auto' ? undefined : tz,
+                hour: '2-digit', minute: '2-digit', hour12: false
+            }).format(date);
+        } catch {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
     };
+
+    // Calculate simulated local Date object for progress math
+    const getSimulatedTargetDate = (date, tz) => {
+        try {
+            const str = new Intl.DateTimeFormat('sv-SE', {
+                timeZone: tz === 'auto' ? undefined : tz,
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            }).format(date).replace(' ', 'T');
+            return new Date(str);
+        } catch {
+            return date;
+        }
+    };
+
+    const targetLocalDate = getSimulatedTargetDate(currentTime, timezone);
+    const targetLocalTimeStr = formatTimeOffset(currentTime, timezone);
 
     const sunriseStr = daily?.sunrise?.[0];
     const sunsetStr = daily?.sunset?.[0];
     const sunriseDate = sunriseStr ? new Date(sunriseStr) : null;
     const sunsetDate = sunsetStr ? new Date(sunsetStr) : null;
-    const sunriseTime = formatTime(sunriseStr);
-    const sunsetTime = formatTime(sunsetStr);
+    const sunriseTime = sunriseStr ? sunriseStr.slice(11, 16) : '--:--';
+    const sunsetTime = sunsetStr ? sunsetStr.slice(11, 16) : '--:--';
+    const aqi = current?.aqi !== undefined ? current.aqi : '--';
     const pm25 = current?.pm2_5 !== undefined ? current.pm2_5 : '--';
+    const pm10 = current?.pm10 !== undefined ? current.pm10 : '--';
+    const no2 = current?.no2 !== undefined ? current.no2 : '--';
+    const so2 = current?.so2 !== undefined ? current.so2 : '--';
 
     const getUVColor = (uvi) => {
         if (uvi <= 2) return '#22c55e'; // Green
@@ -64,10 +91,9 @@ export default function WeatherDetails({ current, daily, t }) {
         return `rgb(${r}, ${g}, ${b})`;
     };
 
-    const getPM25Color = (pm) => {
-        if (pm === '--') return '';
-        const clampedPm = Math.max(0, Math.min(100, parseFloat(pm)));
-        // Stops based on the provided PM2.5 chart image
+    const getAQIColor = (aqiValue) => {
+        if (aqiValue === '--') return '';
+        const val = Math.max(0, Math.min(100, parseFloat(aqiValue)));
         const stops = [
             { v: 0, r: 0, g: 0, b: 255 },       // Blue
             { v: 10, r: 0, g: 255, b: 255 },    // Cyan
@@ -81,15 +107,15 @@ export default function WeatherDetails({ current, daily, t }) {
             { v: 90, r: 204, g: 0, b: 204 },    // Magenta
             { v: 100, r: 255, g: 0, b: 255 }    // Light Magenta
         ];
-        return interpolateColor(clampedPm, stops);
+        return interpolateColor(val, stops);
     };
 
-    const getPM25Label = (pm) => {
-        if (pm > 70) return 'Hazardous';
-        if (pm > 54.4) return '紫爆 (Very Unhealthy)';
-        if (pm > 35.4) return t.pm25Poor || 'Poor';
-        if (pm > 15.4) return t.pm25Moderate || 'Moderate';
-        return t.pm25Good || 'Good';
+    const getAQILabel = (aqiValue) => {
+        if (aqiValue > 80) return t.aqiVeryPoor || 'Very Poor';
+        if (aqiValue > 60) return t.aqiPoor || 'Poor';
+        if (aqiValue > 40) return t.aqiModerate || 'Moderate';
+        if (aqiValue > 20) return t.aqiFair || 'Fair';
+        return t.aqiGood || 'Good';
     };
 
     const getTempColor = (temp) => {
@@ -106,15 +132,78 @@ export default function WeatherDetails({ current, daily, t }) {
         return `hsl(210, 100%, ${lightness}%)`;
     };
 
+    // Restore simple Sun progress
     let sunProgress = 0;
-    if (sunriseDate && sunsetDate) {
-        if (currentTime > sunsetDate) {
+    if (sunriseDate && sunsetDate && !isNaN(sunriseDate.getTime()) && !isNaN(sunsetDate.getTime())) {
+        if (targetLocalDate > sunsetDate) {
             sunProgress = 100;
-        } else if (currentTime > sunriseDate) {
+        } else if (targetLocalDate > sunriseDate) {
             const total = sunsetDate - sunriseDate;
-            const cur = currentTime - sunriseDate;
-            sunProgress = (cur / total) * 100;
+            const cur = targetLocalDate - sunriseDate;
+            sunProgress = Math.min(100, Math.max(0, (cur / total) * 100));
         }
+    }
+
+    // Moon calculations using SunCalc
+    const moonTimes = SunCalc.getMoonTimes(targetLocalDate, lat, lon);
+    const moonIllum = SunCalc.getMoonIllumination(targetLocalDate);
+    
+    // Moon phases with appropriate emojis
+    const phasesInfo = {
+        newMoon: { zh: '新月 / 朔', en: 'New Moon', emoji: '🌑' },
+        waxingCrescent: { zh: '眉月', en: 'Waxing Crescent', emoji: '🌒' },
+        firstQuarter: { zh: '上弦月', en: 'First Quarter', emoji: '🌓' },
+        waxingGibbous: { zh: '盈凸月', en: 'Waxing Gibbous', emoji: '🌔' },
+        fullMoon: { zh: '滿月 / 望', en: 'Full Moon', emoji: '🌕' },
+        waningGibbous: { zh: '虧凸月', en: 'Waning Gibbous', emoji: '🌖' },
+        lastQuarter: { zh: '下弦月', en: 'Last Quarter', emoji: '🌗' },
+        waningCrescent: { zh: '殘月', en: 'Waning Crescent', emoji: '🌘' }
+    };
+
+    const phase = moonIllum.phase;
+    let phaseKey = '';
+    if (phase < 0.03 || phase > 0.97) phaseKey = 'newMoon';
+    else if (phase < 0.22) phaseKey = 'waxingCrescent';
+    else if (phase < 0.28) phaseKey = 'firstQuarter';
+    else if (phase < 0.47) phaseKey = 'waxingGibbous';
+    else if (phase < 0.53) phaseKey = 'fullMoon';
+    else if (phase < 0.72) phaseKey = 'waningGibbous';
+    else if (phase < 0.78) phaseKey = 'lastQuarter';
+    else phaseKey = 'waningCrescent';
+
+    const pInfo = phasesInfo[phaseKey];
+    const phaseNameStr = (lang === 'zh' || lang === 'zh-CN') ? pInfo.zh : pInfo.en;
+    const phaseName = `${pInfo.emoji} ${phaseNameStr}`;
+
+    const formatMoonTime = (dateObj) => {
+        if (!dateObj || isNaN(dateObj.getTime())) return '--:--';
+        return formatTimeOffset(dateObj, timezone);
+    };
+
+    const moonriseTimeText = formatMoonTime(moonTimes.rise);
+    const moonsetTimeText = formatMoonTime(moonTimes.set);
+
+    let moonProgressPct = 0;
+    if (moonTimes.rise && moonTimes.set) {
+        if (moonTimes.rise < moonTimes.set) {
+            if (targetLocalDate > moonTimes.set) moonProgressPct = 100;
+            else if (targetLocalDate > moonTimes.rise) {
+                const total = moonTimes.set - moonTimes.rise;
+                const cur = targetLocalDate - moonTimes.rise;
+                moonProgressPct = Math.min(100, Math.max(0, (cur / total) * 100));
+            }
+        } else {
+            // crosses midnight
+            if (targetLocalDate < moonTimes.set) {
+                const assumedRise = new Date(moonTimes.set.getTime() - 43200000);
+                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - assumedRise)/(moonTimes.set - assumedRise))*100));
+            } else if (targetLocalDate > moonTimes.rise) {
+                const assumedSet = new Date(moonTimes.rise.getTime() + 43200000);
+                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - moonTimes.rise)/(assumedSet - moonTimes.rise))*100));
+            }
+        }
+    } else {
+        moonProgressPct = moonTimes.alwaysUp ? 100 : 0;
     }
 
     const windSpeed = current.wind_speed_10m || 0;
@@ -219,9 +308,16 @@ export default function WeatherDetails({ current, daily, t }) {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <p className="text-headline">{current.relative_humidity_2m}%</p>
-                    <p className="text-body" style={{ color: getHumidityColor(current.relative_humidity_2m), fontWeight: 500, marginBottom: '4px' }}>
-                        {current.relative_humidity_2m >= 65 ? (t.humWet || 'Humid') : current.relative_humidity_2m <= 30 ? (t.humDry || 'Dry') : (t.humComfortable || 'Comfortable')}
-                    </p>
+                    <div style={{ textAlign: 'right' }}>
+                        <p className="text-body" style={{ color: getHumidityColor(current.relative_humidity_2m), fontWeight: 500, marginBottom: '2px' }}>
+                            {current.relative_humidity_2m >= 65 ? (t.humWet || 'Humid') : current.relative_humidity_2m <= 30 ? (t.humDry || 'Dry') : (t.humComfortable || 'Comfortable')}
+                        </p>
+                        {current.dew_point_2m !== undefined && (
+                            <p className="text-label" style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                {t.dewPoint || 'Dew Point'} {current.dew_point_2m}°
+                            </p>
+                        )}
+                    </div>
                 </div>
                 {renderCardValueBar(current.relative_humidity_2m, 100, getHumidityColor(current.relative_humidity_2m))}
             </section>
@@ -257,25 +353,55 @@ export default function WeatherDetails({ current, daily, t }) {
                 {renderCardValueBar(Math.max(0, current.apparent_temperature + 10), 50, getTempColor(current.apparent_temperature))}
             </section>
 
-            {/* PM2.5 */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', background: pm25 !== '--' ? `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getPM25Color(pm25)} 400%)` : 'var(--md-sys-color-surface-variant)' }}>
+            {/* AQI */}
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: aqi !== '--' ? `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getAQIColor(aqi)} 400%)` : 'var(--md-sys-color-surface-variant)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
-                    <Activity size={20} color={getPM25Color(pm25)} />
-                    <span className="text-label">{t.pm25 || 'PM2.5'}</span>
+                    <Activity size={20} color={getAQIColor(aqi)} />
+                    <span className="text-label">{t.aqi || 'Air Quality (AQI)'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <p className="text-headline" style={{ color: getPM25Color(pm25) }}>{pm25} <span className="text-body" style={{ fontSize: '0.9rem', color: 'var(--md-sys-color-on-surface-variant)' }}>μg/m³</span></p>
-                    {pm25 !== '--' && (
-                        <p className="text-body" style={{ fontWeight: 500, color: getPM25Color(pm25), marginBottom: '4px' }}>
-                            {getPM25Label(pm25)}
+                    <p className="text-headline" style={{ color: getAQIColor(aqi) }}>{aqi}</p>
+                    {aqi !== '--' && (
+                        <p className="text-body" style={{ fontWeight: 500, color: getAQIColor(aqi), marginBottom: '4px' }}>
+                            {getAQILabel(aqi)}
                         </p>
                     )}
                 </div>
-                {pm25 !== '--' && renderCardValueBar(pm25, 100, getPM25Color(pm25))}
+                {aqi !== '--' && renderCardValueBar(aqi, 100, getAQIColor(aqi))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.75rem', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
+                        <span style={{opacity: 0.8, marginBottom:'2px'}}>PM2.5</span>
+                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{pm25}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
+                        <span style={{opacity: 0.8, marginBottom:'2px'}}>PM10</span>
+                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{pm10}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
+                        <span style={{opacity: 0.8, marginBottom:'2px'}}>NO2</span>
+                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{no2}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
+                        <span style={{opacity: 0.8, marginBottom:'2px'}}>SO2</span>
+                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{so2}</span>
+                    </div>
+                </div>
             </section>
 
-            {/* Sunrise / Sunset */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 0%, rgba(245, 158, 11, 0.05) 100%)' }}>
+            {/* Sunrise / Sunset & Moonrise / Moonset */}
+            <section className="card" style={{ padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 0%, rgba(245, 158, 11, 0.05) 50%, rgba(129, 140, 248, 0.08) 100%)', position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h3 className="text-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Sparkles size={16} />
+                        {t.astronomy}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                        {targetLocalDate > sunsetDate || targetLocalDate < sunriseDate ? <Moon size={16} /> : <Sun size={16} />}
+                        <span style={{ fontSize: '0.75rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {targetLocalTimeStr}</span>
+                    </div>
+                </div>
+                
+                {/* Sun Track */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Sunrise size={16} />
@@ -287,11 +413,35 @@ export default function WeatherDetails({ current, daily, t }) {
                     </div>
                 </div>
                 <div className="sun-progress-track">
-                    <div className="sun-progress-fill" style={{ width: `${sunProgress}%` }}></div>
-                    <div className="sun-progress-icon" style={{ left: `${sunProgress}%` }}>
+                    <div className="sun-progress-fill" style={{ width: `${sunProgress}%`, background: 'linear-gradient(90deg, #fcd34d, #f59e0b, #d97706)' }}></div>
+                    <div className="sun-progress-icon" style={{ left: `${sunProgress}%`, color: '#f59e0b', filter: 'drop-shadow(0 0 8px #f59e0b)' }}>
                         <Sun size={14} fill="currentColor" />
                     </div>
                 </div>
+
+                <div style={{ borderTop: '1px dashed var(--md-sys-color-outline-variant)', margin: '16px 0', opacity: 0.5 }}></div>
+
+                {/* Moon Track */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Moon size={16} style={{transform: 'scaleX(-1)'}} /> {/* approximate Moonrise mapping */}
+                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonriseTimeText}</span>
+                    </div>
+                    <div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{phaseName}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonsetTimeText}</span>
+                        <Moon size={16} />
+                    </div>
+                </div>
+                <div className="sun-progress-track">
+                    <div className="sun-progress-fill" style={{ width: `${moonProgressPct}%`, background: 'linear-gradient(90deg, #c7d2fe, #818cf8, #4f46e5)' }}></div>
+                    <div className="sun-progress-icon" style={{ left: `${moonProgressPct}%`, color: '#818cf8', filter: 'drop-shadow(0 0 8px #818cf8)' }}>
+                        <Moon size={14} fill="currentColor" />
+                    </div>
+                </div>
+
             </section>
         </div>
     );

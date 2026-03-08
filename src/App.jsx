@@ -59,57 +59,39 @@ function App() {
         setLoading(false);
     };
 
+    const fallbackToIP = async () => {
+        let ipCity = await fetchCityByIP();
+        if (ipCity) {
+            const results = await geocodeCity(ipCity, lang);
+            if (results && results.length > 0) {
+                await loadWeatherForCoords(results[0].lat, results[0].lon, results[0].name || ipCity);
+                return;
+            }
+        }
+        // Fallback if IP fails
+        await loadWeatherForCoords(fallbackCoords.lat, fallbackCoords.lon, fallbackCoords.name);
+    };
+
     const initApp = async () => {
         setLoading(true);
 
-        try {
-            const saved = localStorage.getItem('breezy-last-coords');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (parsed && parsed.lat && parsed.lon) {
-                    await loadWeatherForCoords(parsed.lat, parsed.lon, parsed.name);
-                    return;
-                }
-            }
-        } catch { }
-
-        const fallbackToIP = async () => {
-            let ipCity = await fetchCityByIP();
-            if (ipCity) {
-                const results = await geocodeCity(ipCity, lang);
-                if (results && results.length > 0) {
-                    await loadWeatherForCoords(results[0].lat, results[0].lon, results[0].name || ipCity);
-                    return;
-                }
-            }
-            // Fallback if IP fails
-            await loadWeatherForCoords(fallbackCoords.lat, fallbackCoords.lon, fallbackCoords.name);
-        };
-
-        if (navigator.geolocation && navigator.permissions) {
-            try {
-                const permission = await navigator.permissions.query({ name: 'geolocation' });
-                if (permission.state === 'granted') {
-                    navigator.geolocation.getCurrentPosition(
-                        async (position) => {
-                            const { latitude, longitude } = position.coords;
-                            const cityName = await reverseGeocode(latitude, longitude, lang) || t.currentLocation;
-                            await loadWeatherForCoords(latitude, longitude, cityName);
-                        },
-                        async (err) => {
-                            console.warn("Geolocation fetch error:", err);
-                            await fallbackToIP();
-                        },
-                        { timeout: 10000, enableHighAccuracy: true }
-                    );
-                    return;
-                }
-            } catch (err) {
-                console.warn(err);
-            }
+        // Always try to locate the user (GPS or IP) as default
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const cityName = await reverseGeocode(latitude, longitude, lang) || t.currentLocation;
+                    await loadWeatherForCoords(latitude, longitude, cityName);
+                },
+                async (err) => {
+                    console.warn("Geolocation fetch error:", err);
+                    await fallbackToIP();
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
+        } else {
+            await fallbackToIP();
         }
-
-        await fallbackToIP();
     };
 
     const handleSearchSubmit = async (e) => {
@@ -139,7 +121,7 @@ function App() {
 
     const handleLocateUser = () => {
         if (!navigator.geolocation) {
-            setError("Geolocation is not supported by your browser");
+            fallbackToIP();
             return;
         }
 
@@ -153,11 +135,9 @@ function App() {
                 const cityName = await reverseGeocode(latitude, longitude, lang) || t.currentLocation;
                 await loadWeatherForCoords(latitude, longitude, cityName);
             },
-            (err) => {
+            async (err) => {
                 console.warn(err);
-                setError("Unable to retrieve your location.");
-                setLoading(false);
-                setLocationName(data?.name || fallbackCoords.name);
+                await fallbackToIP();
             },
             { timeout: 10000, enableHighAccuracy: true }
         );
@@ -365,7 +345,7 @@ function App() {
 
                 <DailyForecast daily={data?.daily} t={t} lang={lang} />
 
-                {data && <WeatherDetails current={data.current} daily={data.daily} t={t} />}
+                {data && <WeatherDetails lat={data.latitude} lon={data.longitude} current={data.current} daily={data.daily} timezone={data.timezone} t={t} lang={lang} />}
 
                 <Favorites
                     favorites={favorites}
