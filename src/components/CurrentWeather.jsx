@@ -18,7 +18,11 @@ export default function CurrentWeather({ current, todayMax, todayMin, t, lang })
     return (
         <section className={`card ${condition.bgClass}`} style={{ alignItems: 'center', textAlign: 'center', padding: 'var(--spacing-lg)', position: 'relative', overflow: 'hidden' }}>
             <WeatherEffects bgClass={condition.bgClass} />
-            
+
+            <div style={{ position: 'absolute', bottom: 'var(--spacing-sm)', left: 'var(--spacing-md)', fontSize: '0.75rem', color: 'inherit', opacity: 0.85, zIndex: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Icons.Droplets size={14} />
+                {t.precipitation}: {current.precipitation || 0} mm
+            </div>
             <div style={{ position: 'absolute', bottom: 'var(--spacing-sm)', right: 'var(--spacing-md)', fontSize: '0.75rem', color: 'inherit', opacity: 0.85, zIndex: 1 }}>
                 {t.updatedAt || 'Updated at'}: {formatTime()}
             </div>

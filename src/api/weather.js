@@ -110,7 +110,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
     const params = new URLSearchParams({
         latitude: lat,
         longitude: lon,
-        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m',
+        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,precipitation',
         hourly: 'temperature_2m,weather_code,precipitation_probability',
         daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max',
         timezone: 'auto'
@@ -119,7 +119,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
     const aqParams = new URLSearchParams({
         latitude: lat,
         longitude: lon,
-        current: 'european_aqi,pm10,pm2_5,nitrogen_dioxide,sulphur_dioxide',
+        current: 'us_aqi,pm10,pm2_5,nitrogen_dioxide,sulphur_dioxide',
         timezone: 'auto'
     });
 
@@ -140,7 +140,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
             const aqData = await aqRes.json();
             if (aqData && aqData.current) {
                 data.current.pm2_5 = aqData.current.pm2_5;
-                data.current.aqi = aqData.current.european_aqi;
+                data.current.aqi = aqData.current.us_aqi;
                 data.current.pm10 = aqData.current.pm10;
                 data.current.no2 = aqData.current.nitrogen_dioxide;
                 data.current.so2 = aqData.current.sulphur_dioxide;

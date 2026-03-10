@@ -93,28 +93,24 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
 
     const getAQIColor = (aqiValue) => {
         if (aqiValue === '--') return '';
-        const val = Math.max(0, Math.min(100, parseFloat(aqiValue)));
+        const val = Math.max(0, Math.min(500, parseFloat(aqiValue)));
         const stops = [
-            { v: 0, r: 0, g: 0, b: 255 },       // Blue
-            { v: 10, r: 0, g: 255, b: 255 },    // Cyan
-            { v: 20, r: 255, g: 255, b: 0 },    // Yellow
-            { v: 30, r: 255, g: 170, b: 0 },    // Orange
-            { v: 40, r: 255, g: 85, b: 0 },     // Red-orange
-            { v: 50, r: 255, g: 0, b: 0 },      // Red
-            { v: 60, r: 204, g: 0, b: 0 },      // Darker red
-            { v: 70, r: 153, g: 0, b: 0 },      // Dark red
-            { v: 80, r: 153, g: 0, b: 153 },    // Purple-red
-            { v: 90, r: 204, g: 0, b: 204 },    // Magenta
-            { v: 100, r: 255, g: 0, b: 255 }    // Light Magenta
+            { v: 0, r: 34, g: 197, b: 94 },     // Green (Good: 0-50)
+            { v: 50, r: 234, g: 179, b: 8 },    // Yellow (Moderate: 51-100)
+            { v: 100, r: 249, g: 115, b: 22 },   // Orange (Sensitive: 101-150)
+            { v: 150, r: 239, g: 68, b: 68 },    // Red (Unhealthy: 151-200)
+            { v: 200, r: 168, g: 85, b: 247 },   // Purple (Very Unhealthy: 201-300)
+            { v: 300, r: 127, g: 29, b: 29 }     // Maroon (Hazardous: 300+)
         ];
         return interpolateColor(val, stops);
     };
 
     const getAQILabel = (aqiValue) => {
-        if (aqiValue > 80) return t.aqiVeryPoor || 'Very Poor';
-        if (aqiValue > 60) return t.aqiPoor || 'Poor';
-        if (aqiValue > 40) return t.aqiModerate || 'Moderate';
-        if (aqiValue > 20) return t.aqiFair || 'Fair';
+        if (aqiValue > 300) return 'Hazardous';
+        if (aqiValue > 200) return t.aqiVeryPoor || 'Very Unhealthy';
+        if (aqiValue > 150) return t.aqiPoor || 'Unhealthy';
+        if (aqiValue > 100) return t.aqiModerate || 'Sensitive';
+        if (aqiValue > 50) return t.aqiFair || 'Moderate';
         return t.aqiGood || 'Good';
     };
 
@@ -416,7 +412,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                         </p>
                     )}
                 </div>
-                {aqi !== '--' && renderCardValueBar(aqi, 100, getAQIColor(aqi))}
+                {aqi !== '--' && renderCardValueBar(aqi, 200, getAQIColor(aqi))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.75rem', color: 'var(--md-sys-color-on-surface-variant)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
                         <span style={{ opacity: 0.8, marginBottom: '2px' }}>PM2.5</span>
@@ -470,75 +466,24 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
 
                 <div style={{ borderTop: '1px dashed var(--md-sys-color-outline-variant)', margin: '16px 0', opacity: 0.5 }}></div>
 
-                <div style={{ borderTop: '1px dashed var(--md-sys-color-outline-variant)', margin: '16px 0', opacity: 0.5 }}></div>
-
-                {/* Moon Section with Arc */}
-                <div style={{ position: 'relative', marginTop: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--md-sys-color-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            {phaseName}
-                        </span>
+                {/* Moon Section (Linear) */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Moon size={16} />
+                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonriseTimeText}</span>
                     </div>
-
-                    {/* Semicircle Arc for Moon */}
-                    <div style={{
-                        position: 'relative',
-                        height: '60px',
-                        width: '140px',
-                        margin: '0 auto',
-                        overflow: 'hidden'
-                    }}>
-                        <svg width="140" height="70" style={{ position: 'absolute', bottom: 0 }}>
-                            <path
-                                d="M 10 70 A 60 60 0 0 1 130 70"
-                                fill="none"
-                                stroke="var(--md-sys-color-outline-variant)"
-                                strokeWidth="3"
-                                strokeDasharray="4 2"
-                            />
-                            <path
-                                d="M 10 70 A 60 60 0 0 1 130 70"
-                                fill="none"
-                                stroke="var(--md-sys-color-primary)"
-                                strokeWidth="3"
-                                strokeDashoffset={188.5 - (188.5 * moonProgressPct / 100)}
-                                strokeDasharray="188.5"
-                                transition="stroke-dashoffset 1s ease"
-                            />
-                        </svg>
-                        <div style={{
-                            position: 'absolute',
-                            left: '50%',
-                            bottom: '-70px',
-                            width: '120px',
-                            height: '120px',
-                            transform: `translateX(-50%) rotate(${(moonProgressPct * 1.8) - 180}deg)`,
-                            transition: 'transform 1s ease',
-                            pointerEvents: 'none'
-                        }}>
-                            <Moon
-                                size={18}
-                                fill="var(--md-sys-color-primary)"
-                                style={{
-                                    position: 'absolute',
-                                    top: '0',
-                                    left: '50%',
-                                    transform: `translateX(-50%) rotate(${-(moonProgressPct * 1.8) + 180}deg)`,
-                                    filter: 'drop-shadow(0 0 4px var(--md-sys-color-primary))'
-                                }}
-                            />
-                        </div>
+                    <div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{phaseName}</span>
                     </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '0 4px', marginTop: '-4px' }}>
-                        <div style={{ textAlign: 'left' }}>
-                            <p className="text-label" style={{ fontSize: '0.7rem', opacity: 0.7 }}>{t.sunrise === '日出' ? '月出' : 'Moonrise'}</p>
-                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{moonriseTimeText}</span>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                            <p className="text-label" style={{ fontSize: '0.7rem', opacity: 0.7 }}>{t.sunset === '日落' ? '月落' : 'Moonset'}</p>
-                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{moonsetTimeText}</span>
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonsetTimeText}</span>
+                        <Moon size={16} />
+                    </div>
+                </div>
+                <div className="sun-progress-track">
+                    <div className="sun-progress-fill" style={{ width: `${moonProgressPct}%`, background: 'linear-gradient(90deg, #c7d2fe, #818cf8, #4f46e5)' }}></div>
+                    <div className="sun-progress-icon" style={{ left: `${moonProgressPct}%`, color: '#818cf8', filter: 'drop-shadow(0 0 8px #818cf8)' }}>
+                        <Moon size={14} fill="currentColor" />
                     </div>
                 </div>
             </section>
