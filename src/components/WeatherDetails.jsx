@@ -145,9 +145,43 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
     }
 
     // Moon calculations using SunCalc
-    const moonTimes = SunCalc.getMoonTimes(targetLocalDate, lat, lon);
+    const getMoonEvents = (date, lat, lon) => {
+        // Search yesterday, today, tomorrow to find the most relevant rise/set
+        const searchDates = [-1, 0, 1].map(offset => {
+            const d = new Date(date);
+            d.setDate(d.getDate() + offset);
+            return d;
+        });
+
+        const allEvents = searchDates.flatMap(d => {
+            const t = SunCalc.getMoonTimes(d, lat, lon);
+            const events = [];
+            if (t.rise) events.push({ type: 'rise', time: t.rise });
+            if (t.set) events.push({ type: 'set', time: t.set });
+            return events;
+        }).sort((a, b) => a.time - b.time);
+
+        // Find the "current" cycle: the most recent event before now and the next event after now
+        const prevEvent = allEvents.filter(e => e.time <= date).pop();
+        const nextEvent = allEvents.find(e => e.time > date);
+
+        // For display, we want the "relevant" rise and set for the current status
+        let rise = allEvents.filter(e => e.type === 'rise' && e.time <= date).pop()?.time ||
+            allEvents.find(e => e.type === 'rise' && e.time > date)?.time;
+        let set = allEvents.filter(e => e.type === 'set' && e.time <= date).pop()?.time ||
+            allEvents.find(e => e.type === 'set' && e.time > date)?.time;
+
+        // If one is missing from the 3-day window (rare), fallback to today
+        const todayTimes = SunCalc.getMoonTimes(date, lat, lon);
+        if (!rise) rise = todayTimes.rise;
+        if (!set) set = todayTimes.set;
+
+        return { rise, set, alwaysUp: todayTimes.alwaysUp, alwaysDown: todayTimes.alwaysDown };
+    };
+
+    const moonEvents = getMoonEvents(targetLocalDate, lat, lon);
     const moonIllum = SunCalc.getMoonIllumination(targetLocalDate);
-    
+
     // Moon phases with appropriate emojis
     const phasesInfo = {
         newMoon: { zh: '新月 / 朔', en: 'New Moon', emoji: '🌑' },
@@ -180,30 +214,33 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         return formatTimeOffset(dateObj, timezone);
     };
 
-    const moonriseTimeText = formatMoonTime(moonTimes.rise);
-    const moonsetTimeText = formatMoonTime(moonTimes.set);
+    const moonriseTimeText = formatMoonTime(moonEvents.rise);
+    const moonsetTimeText = formatMoonTime(moonEvents.set);
 
     let moonProgressPct = 0;
-    if (moonTimes.rise && moonTimes.set) {
-        if (moonTimes.rise < moonTimes.set) {
-            if (targetLocalDate > moonTimes.set) moonProgressPct = 100;
-            else if (targetLocalDate > moonTimes.rise) {
-                const total = moonTimes.set - moonTimes.rise;
-                const cur = targetLocalDate - moonTimes.rise;
+    if (moonEvents.rise && moonEvents.set) {
+        if (moonEvents.rise < moonEvents.set) {
+            // Rise is before Set
+            if (targetLocalDate > moonEvents.set) moonProgressPct = 100;
+            else if (targetLocalDate > moonEvents.rise) {
+                const total = moonEvents.set - moonEvents.rise;
+                const cur = targetLocalDate - moonEvents.rise;
                 moonProgressPct = Math.min(100, Math.max(0, (cur / total) * 100));
             }
         } else {
-            // crosses midnight
-            if (targetLocalDate < moonTimes.set) {
-                const assumedRise = new Date(moonTimes.set.getTime() - 43200000);
-                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - assumedRise)/(moonTimes.set - assumedRise))*100));
-            } else if (targetLocalDate > moonTimes.rise) {
-                const assumedSet = new Date(moonTimes.rise.getTime() + 43200000);
-                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - moonTimes.rise)/(assumedSet - moonTimes.rise))*100));
+            // Set is before Rise (crosses midnight)
+            if (targetLocalDate < moonEvents.set) {
+                // Currently setting (from an earlier rise)
+                const assumedRise = new Date(moonEvents.set.getTime() - 43200000); // approx 12h
+                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - assumedRise) / (moonEvents.set - assumedRise)) * 100));
+            } else if (targetLocalDate > moonEvents.rise) {
+                // Currently rising (towards a later set)
+                const assumedSet = new Date(moonEvents.rise.getTime() + 43200000); // approx 12h
+                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - moonEvents.rise) / (assumedSet - moonEvents.rise)) * 100));
             }
         }
     } else {
-        moonProgressPct = moonTimes.alwaysUp ? 100 : 0;
+        moonProgressPct = moonEvents.alwaysUp ? 100 : 0;
     }
 
     const windSpeed = current.wind_speed_10m || 0;
@@ -370,19 +407,19 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 {aqi !== '--' && renderCardValueBar(aqi, 100, getAQIColor(aqi))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.75rem', color: 'var(--md-sys-color-on-surface-variant)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{opacity: 0.8, marginBottom:'2px'}}>PM2.5</span>
+                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>PM2.5</span>
                         <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{pm25}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{opacity: 0.8, marginBottom:'2px'}}>PM10</span>
+                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>PM10</span>
                         <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{pm10}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{opacity: 0.8, marginBottom:'2px'}}>NO2</span>
+                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>NO2</span>
                         <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{no2}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{opacity: 0.8, marginBottom:'2px'}}>SO2</span>
+                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>SO2</span>
                         <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{so2}</span>
                     </div>
                 </div>
@@ -400,7 +437,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                         <span style={{ fontSize: '0.75rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {targetLocalTimeStr}</span>
                     </div>
                 </div>
-                
+
                 {/* Sun Track */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -424,7 +461,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 {/* Moon Track */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Moon size={16} style={{transform: 'scaleX(-1)'}} /> {/* approximate Moonrise mapping */}
+                        <Moon size={16} style={{ transform: 'scaleX(-1)' }} /> {/* approximate Moonrise mapping */}
                         <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonriseTimeText}</span>
                     </div>
                     <div>

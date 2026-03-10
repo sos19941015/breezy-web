@@ -99,7 +99,7 @@ export const translations = {
         aqiPoor: "不良",
         aqiVeryPoor: "極差",
         dewPoint: "露點",
-        astronomy: "日出日落與月相"
+        astronomy: "太陽與月亮"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -149,7 +149,7 @@ export const translations = {
         aqiPoor: "不良",
         aqiVeryPoor: "极差",
         dewPoint: "露点",
-        astronomy: "日出日落与月相"
+        astronomy: "太阳与月亮"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -201,7 +201,7 @@ export const translations = {
         aqiPoor: "悪い",
         aqiVeryPoor: "非常に悪い",
         dewPoint: "露点",
-        astronomy: "日の出・日の入りと月相"
+        astronomy: "太陽と月"
     }
 };
 

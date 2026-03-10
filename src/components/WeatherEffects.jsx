@@ -58,18 +58,46 @@ export default function WeatherEffects({ bgClass }) {
             `}</style>
 
             {/* Clouds (for cloudy or rain/thunder) */}
-            {(isCloudy || isRain || isThunder || isSnow) && Array.from({ length: 4 }).map((_, i) => (
-                <div key={`cloud-${i}`} className="effect-item" style={{
-                    top: `${10 + Math.random() * 40}%`,
+            {(isCloudy || isRain || isThunder || isSnow) && (
+                <div className="clouds-container" style={{
+                    position: 'absolute',
+                    top: 0,
                     left: 0,
-                    animation: `float-cloud ${20 + Math.random() * 20}s linear infinite`,
-                    animationDelay: `${-Math.random() * 30}s`,
-                    opacity: 0.6,
-                    transform: `scale(${0.5 + Math.random() * 1.5})`
+                    width: '200%',
+                    height: '50%',
+                    display: 'flex',
+                    gap: '100px',
+                    animation: `float-clouds-unified 40s linear infinite`,
+                    opacity: 0.5,
+                    zIndex: 0
                 }}>
-                    <Cloud size={48} fill="currentColor" opacity={0.3} />
+                    <style>{`
+                        @keyframes float-clouds-unified {
+                            0% { transform: translateX(0); }
+                            100% { transform: translateX(-50%); }
+                        }
+                        .cloud-layer {
+                            display: flex;
+                            align-items: center;
+                            gap: 150px;
+                        }
+                    `}</style>
+                    <div className="cloud-layer">
+                        <Cloud size={80} fill="currentColor" opacity={0.3} style={{ marginTop: '20px' }} />
+                        <Cloud size={120} fill="currentColor" opacity={0.2} style={{ marginTop: '60px' }} />
+                        <Cloud size={60} fill="currentColor" opacity={0.4} style={{ marginTop: '10px' }} />
+                        <Cloud size={100} fill="currentColor" opacity={0.25} style={{ marginTop: '40px' }} />
+                        <Cloud size={90} fill="currentColor" opacity={0.35} style={{ marginTop: '80px' }} />
+                    </div>
+                    <div className="cloud-layer">
+                        <Cloud size={80} fill="currentColor" opacity={0.3} style={{ marginTop: '20px' }} />
+                        <Cloud size={120} fill="currentColor" opacity={0.2} style={{ marginTop: '60px' }} />
+                        <Cloud size={60} fill="currentColor" opacity={0.4} style={{ marginTop: '10px' }} />
+                        <Cloud size={100} fill="currentColor" opacity={0.25} style={{ marginTop: '40px' }} />
+                        <Cloud size={90} fill="currentColor" opacity={0.35} style={{ marginTop: '80px' }} />
+                    </div>
                 </div>
-            ))}
+            )}
 
             {/* Raindrops */}
             {(isRain || isThunder) && Array.from({ length: 20 }).map((_, i) => (
