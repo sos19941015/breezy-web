@@ -3,7 +3,7 @@ import * as Icons from 'lucide-react';
 import { getWeatherCondition } from '../api/weather';
 import WeatherEffects from './WeatherEffects';
 
-export default function CurrentWeather({ current, todayMax, todayMin, todayPrecipSum, t, lang }) {
+export default function CurrentWeather({ current, todayMax, todayMin, t, lang }) {
     if (!current) return <section className="card skeleton" style={{ height: '180px' }}></section>;
 
     const condition = getWeatherCondition(current.weather_code, current.is_day, lang);
@@ -21,7 +21,7 @@ export default function CurrentWeather({ current, todayMax, todayMin, todayPreci
 
             <div style={{ position: 'absolute', bottom: 'var(--spacing-sm)', left: 'var(--spacing-md)', fontSize: '0.75rem', color: 'inherit', opacity: 0.85, zIndex: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Icons.Droplets size={14} />
-                {t.precipitation}: {todayPrecipSum !== undefined ? todayPrecipSum : 0} mm
+                {t.precipitation}: {(current.precipitation || 0).toFixed(1)} mm
             </div>
             <div style={{ position: 'absolute', bottom: 'var(--spacing-sm)', right: 'var(--spacing-md)', fontSize: '0.75rem', color: 'inherit', opacity: 0.85, zIndex: 1 }}>
                 {t.updatedAt || 'Updated at'}: {formatTime()}
