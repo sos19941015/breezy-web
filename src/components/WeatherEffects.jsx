@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { Cloud, Star, Snowflake, Droplets, Zap } from 'lucide-react';
+import { Star, Snowflake, Droplets, Zap } from 'lucide-react';
 
 export default function WeatherEffects({ bgClass }) {
     if (!bgClass) return null;
@@ -21,11 +20,22 @@ export default function WeatherEffects({ bgClass }) {
             zIndex: 0
         }}>
             <style>{`
-                @keyframes float-cloud {
-                    0% { transform: translateX(-150px); opacity: 0; }
-                    20% { opacity: 0.6; }
-                    80% { opacity: 0.6; }
-                    100% { transform: translateX(100vw); opacity: 0; }
+                @keyframes float-pill {
+                    0% { transform: translateX(-300px); }
+                    100% { transform: translateX(800px); }
+                }
+                .composite-cloud {
+                    position: absolute;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                    filter: blur(0.5px);
+                }
+                .cloud-pill {
+                    height: 24px;
+                    background: rgba(255, 255, 255, 0.15);
+                    border-radius: 12px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
                 }
                 @keyframes fall-rain {
                     0% { transform: translateY(-50px) rotate(15deg); opacity: 0; }
@@ -57,45 +67,39 @@ export default function WeatherEffects({ bgClass }) {
                 }
             `}</style>
 
-            {/* Clouds (for cloudy or rain/thunder) */}
+            {/* Minimalist Pill Clouds (for cloudy or rain/thunder) */}
             {(isCloudy || isRain || isThunder || isSnow) && (
                 <div className="clouds-container" style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
-                    width: '200%',
-                    height: '50%',
-                    display: 'flex',
-                    gap: '100px',
-                    animation: `float-clouds-unified 40s linear infinite`,
-                    opacity: 0.5,
+                    width: '100%',
+                    height: '60%',
+                    pointerEvents: 'none',
                     zIndex: 0
                 }}>
-                    <style>{`
-                        @keyframes float-clouds-unified {
-                            0% { transform: translateX(0); }
-                            100% { transform: translateX(-50%); }
-                        }
-                        .cloud-layer {
-                            display: flex;
-                            align-items: center;
-                            gap: 150px;
-                        }
-                    `}</style>
-                    <div className="cloud-layer">
-                        <Cloud size={80} fill="currentColor" opacity={0.3} style={{ marginTop: '20px' }} />
-                        <Cloud size={120} fill="currentColor" opacity={0.2} style={{ marginTop: '60px' }} />
-                        <Cloud size={60} fill="currentColor" opacity={0.4} style={{ marginTop: '10px' }} />
-                        <Cloud size={100} fill="currentColor" opacity={0.25} style={{ marginTop: '40px' }} />
-                        <Cloud size={90} fill="currentColor" opacity={0.35} style={{ marginTop: '80px' }} />
-                    </div>
-                    <div className="cloud-layer">
-                        <Cloud size={80} fill="currentColor" opacity={0.3} style={{ marginTop: '20px' }} />
-                        <Cloud size={120} fill="currentColor" opacity={0.2} style={{ marginTop: '60px' }} />
-                        <Cloud size={60} fill="currentColor" opacity={0.4} style={{ marginTop: '10px' }} />
-                        <Cloud size={100} fill="currentColor" opacity={0.25} style={{ marginTop: '40px' }} />
-                        <Cloud size={90} fill="currentColor" opacity={0.35} style={{ marginTop: '80px' }} />
-                    </div>
+                    {[
+                        { top: '15%', delay: 0, duration: 25, pills: [120, 80] },
+                        { top: '35%', delay: -12, duration: 32, pills: [160, 100, 140] },
+                        { top: '10%', delay: -18, duration: 28, pills: [90, 130] },
+                        { top: '45%', delay: -5, duration: 22, pills: [110] },
+                        { top: '25%', delay: -25, duration: 35, pills: [140, 60] }
+                    ].map((group, i) => (
+                        <div key={i} className="composite-cloud" style={{
+                            top: group.top,
+                            animation: `float-pill ${group.duration}s linear infinite`,
+                            animationDelay: `${group.delay}s`,
+                            left: -200
+                        }}>
+                            {group.pills.map((w, pi) => (
+                                <div key={pi} className="cloud-pill" style={{
+                                    width: w,
+                                    opacity: 0.8 / (pi + 1),
+                                    marginLeft: pi * 20 * (i % 2 === 0 ? 1 : -1)
+                                }} />
+                            ))}
+                        </div>
+                    ))}
                 </div>
             )}
 
