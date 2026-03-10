@@ -144,34 +144,40 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         }
     }
 
-    // Moon calculations using SunCalc
-    const getMoonEvents = (date, lat, lon) => {
-        // Search yesterday, today, tomorrow to find the most relevant rise/set
-        const searchDates = [-1, 0, 1].map(offset => {
-            const d = new Date(date);
-            d.setDate(d.getDate() + offset);
-            return d;
-        });
+    // Moon calculations prioritizing API data
+    const getMoonEvents = (date, lat, lon, dailyData) => {
+        let allEvents = [];
 
-        const allEvents = searchDates.flatMap(d => {
-            const t = SunCalc.getMoonTimes(d, lat, lon);
-            const events = [];
-            if (t.rise) events.push({ type: 'rise', time: t.rise });
-            if (t.set) events.push({ type: 'set', time: t.set });
-            return events;
-        }).sort((a, b) => a.time - b.time);
+        if (dailyData?.moonrise && dailyData?.moonset) {
+            // Map API strings to date objects
+            const apiEvents = [];
+            dailyData.moonrise.forEach(t => t && apiEvents.push({ type: 'rise', time: new Date(t) }));
+            dailyData.moonset.forEach(t => t && apiEvents.push({ type: 'set', time: new Date(t) }));
+            allEvents = apiEvents.sort((a, b) => a.time - b.time);
+        } else {
+            // Fallback to SunCalc if API data is missing
+            const searchDates = [-1, 0, 1].map(offset => {
+                const d = new Date(date);
+                d.setDate(d.getDate() + offset);
+                return d;
+            });
+            allEvents = searchDates.flatMap(d => {
+                const t = SunCalc.getMoonTimes(d, lat, lon);
+                const events = [];
+                if (t.rise) events.push({ type: 'rise', time: t.rise });
+                if (t.set) events.push({ type: 'set', time: t.set });
+                return events;
+            }).sort((a, b) => a.time - b.time);
+        }
 
-        // Find the "current" cycle: the most recent event before now and the next event after now
-        const prevEvent = allEvents.filter(e => e.time <= date).pop();
-        const nextEvent = allEvents.find(e => e.time > date);
-
-        // For display, we want the "relevant" rise and set for the current status
+        // Current relevant cycle selection
+        // If moon is up, we want the current rise and next set
+        // If moon is down, we want the current set and next rise
         let rise = allEvents.filter(e => e.type === 'rise' && e.time <= date).pop()?.time ||
             allEvents.find(e => e.type === 'rise' && e.time > date)?.time;
         let set = allEvents.filter(e => e.type === 'set' && e.time <= date).pop()?.time ||
             allEvents.find(e => e.type === 'set' && e.time > date)?.time;
 
-        // If one is missing from the 3-day window (rare), fallback to today
         const todayTimes = SunCalc.getMoonTimes(date, lat, lon);
         if (!rise) rise = todayTimes.rise;
         if (!set) set = todayTimes.set;
@@ -179,7 +185,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         return { rise, set, alwaysUp: todayTimes.alwaysUp, alwaysDown: todayTimes.alwaysDown };
     };
 
-    const moonEvents = getMoonEvents(targetLocalDate, lat, lon);
+    const moonEvents = getMoonEvents(targetLocalDate, lat, lon, daily);
     const moonIllum = SunCalc.getMoonIllumination(targetLocalDate);
 
     // Moon phases with appropriate emojis
@@ -196,13 +202,14 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
 
     const phase = moonIllum.phase;
     let phaseKey = '';
+    // Use slightly broader ranges for main phases to match user expectations
     if (phase < 0.03 || phase > 0.97) phaseKey = 'newMoon';
     else if (phase < 0.22) phaseKey = 'waxingCrescent';
     else if (phase < 0.28) phaseKey = 'firstQuarter';
     else if (phase < 0.47) phaseKey = 'waxingGibbous';
     else if (phase < 0.53) phaseKey = 'fullMoon';
-    else if (phase < 0.72) phaseKey = 'waningGibbous';
-    else if (phase < 0.78) phaseKey = 'lastQuarter';
+    else if (phase < 0.71) phaseKey = 'waningGibbous'; // 0.72 -> 0.71 to be more inclusive of Last Quarter
+    else if (phase < 0.79) phaseKey = 'lastQuarter';
     else phaseKey = 'waningCrescent';
 
     const pInfo = phasesInfo[phaseKey];
@@ -219,29 +226,34 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
 
     let moonProgressPct = 0;
     if (moonEvents.rise && moonEvents.set) {
-        if (moonEvents.rise < moonEvents.set) {
-            // Rise is before Set
-            if (targetLocalDate > moonEvents.set) moonProgressPct = 100;
-            else if (targetLocalDate > moonEvents.rise) {
-                const total = moonEvents.set - moonEvents.rise;
-                const cur = targetLocalDate - moonEvents.rise;
-                moonProgressPct = Math.min(100, Math.max(0, (cur / total) * 100));
-            }
+        const now = targetLocalDate.getTime();
+        const rTime = moonEvents.rise.getTime();
+        const sTime = moonEvents.set.getTime();
+
+        if (rTime < sTime) {
+            // Normal cycle: Rise today, Set today/tomorrow
+            if (now >= sTime) moonProgressPct = 100;
+            else if (now >= rTime) moonProgressPct = ((now - rTime) / (sTime - rTime)) * 100;
+            else moonProgressPct = 0;
         } else {
-            // Set is before Rise (crosses midnight)
-            if (targetLocalDate < moonEvents.set) {
-                // Currently setting (from an earlier rise)
-                const assumedRise = new Date(moonEvents.set.getTime() - 43200000); // approx 12h
-                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - assumedRise) / (moonEvents.set - assumedRise)) * 100));
-            } else if (targetLocalDate > moonEvents.rise) {
-                // Currently rising (towards a later set)
-                const assumedSet = new Date(moonEvents.rise.getTime() + 43200000); // approx 12h
-                moonProgressPct = Math.max(0, Math.min(100, ((targetLocalDate - moonEvents.rise) / (assumedSet - moonEvents.rise)) * 100));
+            // Inverted cycle (crosses midnight): Set today, Rise today later
+            if (now < sTime) {
+                // Currently setting from yesterday's rise
+                const assumedRise = rTime - 86400000;
+                moonProgressPct = ((now - assumedRise) / (sTime - assumedRise)) * 100;
+            } else if (now > rTime) {
+                // Currently rising towards tomorrow's set
+                const assumedSet = sTime + 86400000;
+                moonProgressPct = ((now - rTime) / (assumedSet - rTime)) * 100;
+            } else {
+                // In between set and rise (down)
+                moonProgressPct = 0;
             }
         }
     } else {
         moonProgressPct = moonEvents.alwaysUp ? 100 : 0;
     }
+    moonProgressPct = Math.min(100, Math.max(0, moonProgressPct));
 
     const windSpeed = current.wind_speed_10m || 0;
     const windAnimDuration = Math.max(0.5, 3 - (windSpeed * 0.05));
@@ -458,27 +470,77 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
 
                 <div style={{ borderTop: '1px dashed var(--md-sys-color-outline-variant)', margin: '16px 0', opacity: 0.5 }}></div>
 
-                {/* Moon Track */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Moon size={16} style={{ transform: 'scaleX(-1)' }} /> {/* approximate Moonrise mapping */}
-                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonriseTimeText}</span>
-                    </div>
-                    <div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{phaseName}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonsetTimeText}</span>
-                        <Moon size={16} />
-                    </div>
-                </div>
-                <div className="sun-progress-track">
-                    <div className="sun-progress-fill" style={{ width: `${moonProgressPct}%`, background: 'linear-gradient(90deg, #c7d2fe, #818cf8, #4f46e5)' }}></div>
-                    <div className="sun-progress-icon" style={{ left: `${moonProgressPct}%`, color: '#818cf8', filter: 'drop-shadow(0 0 8px #818cf8)' }}>
-                        <Moon size={14} fill="currentColor" />
-                    </div>
-                </div>
+                <div style={{ borderTop: '1px dashed var(--md-sys-color-outline-variant)', margin: '16px 0', opacity: 0.5 }}></div>
 
+                {/* Moon Section with Arc */}
+                <div style={{ position: 'relative', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--md-sys-color-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {phaseName}
+                        </span>
+                    </div>
+
+                    {/* Semicircle Arc for Moon */}
+                    <div style={{
+                        position: 'relative',
+                        height: '60px',
+                        width: '140px',
+                        margin: '0 auto',
+                        overflow: 'hidden'
+                    }}>
+                        <svg width="140" height="70" style={{ position: 'absolute', bottom: 0 }}>
+                            <path
+                                d="M 10 70 A 60 60 0 0 1 130 70"
+                                fill="none"
+                                stroke="var(--md-sys-color-outline-variant)"
+                                strokeWidth="3"
+                                strokeDasharray="4 2"
+                            />
+                            <path
+                                d="M 10 70 A 60 60 0 0 1 130 70"
+                                fill="none"
+                                stroke="var(--md-sys-color-primary)"
+                                strokeWidth="3"
+                                strokeDashoffset={188.5 - (188.5 * moonProgressPct / 100)}
+                                strokeDasharray="188.5"
+                                transition="stroke-dashoffset 1s ease"
+                            />
+                        </svg>
+                        <div style={{
+                            position: 'absolute',
+                            left: '50%',
+                            bottom: '-70px',
+                            width: '120px',
+                            height: '120px',
+                            transform: `translateX(-50%) rotate(${(moonProgressPct * 1.8) - 180}deg)`,
+                            transition: 'transform 1s ease',
+                            pointerEvents: 'none'
+                        }}>
+                            <Moon
+                                size={18}
+                                fill="var(--md-sys-color-primary)"
+                                style={{
+                                    position: 'absolute',
+                                    top: '0',
+                                    left: '50%',
+                                    transform: `translateX(-50%) rotate(${-(moonProgressPct * 1.8) + 180}deg)`,
+                                    filter: 'drop-shadow(0 0 4px var(--md-sys-color-primary))'
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '0 4px', marginTop: '-4px' }}>
+                        <div style={{ textAlign: 'left' }}>
+                            <p className="text-label" style={{ fontSize: '0.7rem', opacity: 0.7 }}>{t.sunrise === '日出' ? '月出' : 'Moonrise'}</p>
+                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{moonriseTimeText}</span>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <p className="text-label" style={{ fontSize: '0.7rem', opacity: 0.7 }}>{t.sunset === '日落' ? '月落' : 'Moonset'}</p>
+                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 600 }}>{moonsetTimeText}</span>
+                        </div>
+                    </div>
+                </div>
             </section>
         </div>
     );

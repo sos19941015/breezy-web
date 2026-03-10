@@ -124,10 +124,11 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
     });
 
     try {
-        const [weatherRes, aqRes] = await Promise.all([
+        const [weatherRes, aqRes, astroRes] = await Promise.all([
             fetch(`${BASE_URL}?${params.toString()}`),
-            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`)
-        ]).catch(() => [null, null]);
+            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`),
+            fetch(`https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`)
+        ]).catch(() => [null, null, null]);
 
         if (!weatherRes || !weatherRes.ok) {
             throw new Error('Weather data fetch failed');
@@ -143,6 +144,18 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
                 data.current.pm10 = aqData.current.pm10;
                 data.current.no2 = aqData.current.nitrogen_dioxide;
                 data.current.so2 = aqData.current.sulphur_dioxide;
+            }
+        }
+
+        if (astroRes && astroRes.ok) {
+            const astroData = await astroRes.json();
+            if (astroData && astroData.daily) {
+                // Merge accurate astronomy data
+                data.daily.moonrise = astroData.daily.moonrise;
+                data.daily.moonset = astroData.daily.moonset;
+                // Prefer astronomy API for sunrise/sunset too as it's more specific
+                data.daily.sunrise = astroData.daily.sunrise;
+                data.daily.sunset = astroData.daily.sunset;
             }
         }
 
