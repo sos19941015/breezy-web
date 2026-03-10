@@ -337,6 +337,7 @@ function App() {
                     current={data?.current}
                     todayMax={data?.daily?.temperature_2m_max?.[0]}
                     todayMin={data?.daily?.temperature_2m_min?.[0]}
+                    todayPrecipSum={data?.daily?.precipitation_sum?.[0]}
                     t={t}
                     lang={lang}
                 />

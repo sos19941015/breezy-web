@@ -112,7 +112,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
         longitude: lon,
         current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,dew_point_2m,precipitation',
         hourly: 'temperature_2m,weather_code,precipitation_probability',
-        daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max',
+        daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max,precipitation_sum',
         timezone: 'auto'
     });
 
