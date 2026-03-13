@@ -10,25 +10,34 @@ A premium, modern weather web application inspired by the open-source **[Breezy 
 
 ## 🌟 Features (功能重點)
 
-- **🎨 Modern Aesthetics**: Material 3 inspired UI with vibrant colors, glassmorphism, and smooth transitions.
+- **🎨 Premium Aesthetics**: Material 3 inspired UI with vibrant colors, advanced glassmorphism, and custom-designed icons.
+- **🌈 Dynamic Visuals**: 
+  - **Dynamic Backgrounds**: Shifts beautifully based on weather conditions (Clear, Cloudy, Rain, Snow, Thunder).
+  - **Fluid Transitions**: Smooth animations for wind, progress tracks, and layout changes.
+- **🧪 Visual Indicators**:
+  - **Celestial Progress**: Refined linear tracking for Sun and Moon cycles with elegant glow effects.
+  - **AQI Refinement**: Minimalist Air Quality indicators with semantic color-coding and clean pollutant layout.
 - **🌍 Multi-language**: Fully localized in English, Traditional Chinese (繁體中文), Simplified Chinese (简体中文), and Japanese (日本語).
-- **📍 Smart Location**: Auto-locates via IP (fallback) or high-precision GPS. Includes global city search.
-- **📈 Detailed Forecast**:
-  - 48-hour hourly forecast with temperature and precipitation trends.
-  - 7-day daily forecast with local date formatting.
-- **✨ Fluid Experience**: Optimized for both touch and mouse interactions with horizontal drag-to-scroll.
-- **🌈 Dynamic Themes**: UI background shifts dynamically (Clear, Cloudy, Rain, Snow, Thunder) based on current weather.
-- **⭐ Favorites**: Save your frequent locations to local storage for quick access.
+- **📍 Smart Navigation**: 
+  - Auto-locates via high-precision GPS or IP fallback.
+  - Global city search with intelligent geocoding results.
+  - Favorites system to save frequent locations.
+- **📈 Comprehensive Data**:
+  - 48-hour detailed hourly forecast (Temp, Precipitation probability).
+  - 7-day daily forecast with high/low temperature trends.
+  - Precise metrics for Wind, Humidity, UV Index, Visibility, and Pressure.
+- **📱 Fully Responsive**: Optimized for high-density mobile displays with a "mobile-first" approach and touch-friendly gestures.
 
 ---
 
 ## 🛠️ Technology Stack (技術棧)
 
-- **Framework**: [React.js](https://react.dev/)
+- **Framework**: [React.js](https://react.dev/) (Hooks, Context, Functional Components)
 - **Build Tool**: [Vite](https://vitejs.dev/)
-- **API**: [Open-Meteo](https://open-meteo.com/) (Weather & Geocoding)
+- **API**: [Open-Meteo](https://open-meteo.com/) (Weather, Air Quality & Astronomy)
 - **Icons**: [Lucide React](https://lucide.dev/)
-- **Styles**: Custom CSS (Vanilla) with CSS Variables for theme management.
+- **Styles**: Vanilla CSS with CSS Variables for theme management and Material 3 color system.
+- **Calculations**: [SunCalc](https://github.com/mourner/suncalc) for precise astronomical timings.
 
 ---
 
@@ -55,6 +64,7 @@ A premium, modern weather web application inspired by the open-source **[Breezy 
 
 ## 📜 Credits & License
 
-- Inspired by the UI/UX of **[Breezy Weather](https://github.com/breezy-weather/breezy-weather)**.
-- Data provided by **[Open-Meteo](https://open-meteo.com/)**.
-- MIT License. Made by **Rex**.
+- **Design Inspiration**: [Breezy Weather](https://github.com/breezy-weather/breezy-weather) project.
+- **Data Source**: [Open-Meteo](https://open-meteo.com/).
+- **App Icon**: Custom designed premium vector icon.
+- **License**: MIT License. Made with ❤️ by **Rex**.
