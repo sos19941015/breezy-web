@@ -88,23 +88,26 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         if (aqiValue === '--') return '';
         const val = Math.max(0, Math.min(500, parseFloat(aqiValue)));
         const stops = [
-            { v: 0, r: 34, g: 197, b: 94 },     // Green (Good: 0-50)
-            { v: 50, r: 234, g: 179, b: 8 },    // Yellow (Moderate: 51-100)
-            { v: 100, r: 249, g: 115, b: 22 },   // Orange (Sensitive: 101-150)
-            { v: 150, r: 239, g: 68, b: 68 },    // Red (Unhealthy: 151-200)
-            { v: 200, r: 168, g: 85, b: 247 },   // Purple (Very Unhealthy: 201-300)
-            { v: 300, r: 127, g: 29, b: 29 }     // Maroon (Hazardous: 300+)
+            { v: 0, r: 76, g: 175, b: 80 },      // Green (Level 1: 0-20)
+            { v: 20, r: 76, g: 175, b: 80 },     // Green (Cap Level 1)
+            { v: 50, r: 251, g: 192, b: 45 },    // Yellow (Level 2: 21-50)
+            { v: 100, r: 255, g: 152, b: 0 },    // Orange (Level 3: 51-100)
+            { v: 150, r: 244, g: 67, b: 54 },    // Red (Level 4: 101-150)
+            { v: 250, r: 156, g: 39, b: 176 },   // Purple (Level 5: 151-250)
+            { v: 500, r: 121, g: 85, b: 72 }     // Brown (Level 6: 251+)
         ];
         return interpolateColor(val, stops);
     };
 
     const getAQILabel = (aqiValue) => {
-        if (aqiValue > 300) return 'Hazardous';
-        if (aqiValue > 200) return t.aqiVeryPoor || 'Very Unhealthy';
-        if (aqiValue > 150) return t.aqiPoor || 'Unhealthy';
-        if (aqiValue > 100) return t.aqiModerate || 'Sensitive';
-        if (aqiValue > 50) return t.aqiFair || 'Moderate';
-        return t.aqiGood || 'Good';
+        if (aqiValue === '--') return '';
+        const v = parseFloat(aqiValue);
+        if (v > 250) return t.aqiL6 || 'Hazardous';
+        if (v > 150) return t.aqiL5 || 'Very Unhealthy';
+        if (v > 100) return t.aqiL4 || 'Unhealthy';
+        if (v > 50) return t.aqiL3 || 'Poor';
+        if (v > 20) return t.aqiL2 || 'Fair';
+        return t.aqiL1 || 'Excellent';
     };
 
     const getPollutantColor = (type, val) => {
