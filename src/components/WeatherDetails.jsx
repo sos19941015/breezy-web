@@ -294,6 +294,9 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         );
     };
 
+    const visibilityVal = (current.visibility !== undefined && current.visibility !== null) ? Math.round(current.visibility / 1000) : '--';
+    const pressureVal = (current.surface_pressure !== undefined && current.surface_pressure !== null) ? Math.round(current.surface_pressure) : '--';
+
     return (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'var(--spacing-md)' }}>
             <style>{`
@@ -400,8 +403,8 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{current.visibility ? Math.round(current.visibility / 1000) : '--'}</span>
-                        <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>km</span>
+                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{visibilityVal}</span>
+                        {visibilityVal !== '--' && <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>km</span>}
                     </div>
                 </div>
                 {renderCardValueBar(current.visibility ? Math.min(24000, current.visibility) : 0, 24000, "#8b5cf6")}
@@ -415,11 +418,11 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{Math.round(current.surface_pressure)}</span>
-                        <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>hPa</span>
+                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{pressureVal}</span>
+                        {pressureVal !== '--' && <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>hPa</span>}
                     </div>
                 </div>
-                {renderCardValueBar(Math.max(0, current.surface_pressure - 950), 100, "#14b8a6")}
+                {renderCardValueBar(current.surface_pressure ? Math.max(0, current.surface_pressure - 950) : 0, 100, "#14b8a6")}
             </section>
 
             {/* AQI */}
