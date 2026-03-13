@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Droplets, Wind, Sun, Moon, Eye, Sunrise, Sunset, Activity, Navigation, Clock, Sparkles } from 'lucide-react';
+import { Droplets, Wind, Sun, Moon, Eye, Sunrise, Sunset, Activity, Navigation, Clock, Sparkles, Gauge, Thermometer } from 'lucide-react';
 import SunCalc from 'suncalc';
 
 export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, daily, timezone = 'auto', t, lang = 'zh' }) {
@@ -30,7 +30,6 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         }
     };
 
-    // Calculate simulated local Date object for progress math
     const getSimulatedTargetDate = (date, tz) => {
         try {
             const str = new Intl.DateTimeFormat('sv-SE', {
@@ -70,7 +69,6 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
     const interpolateColor = (val, colorStops) => {
         let lower = colorStops[0];
         let upper = colorStops[colorStops.length - 1];
-
         for (let i = 0; i < colorStops.length - 1; i++) {
             if (val >= colorStops[i].v && val <= colorStops[i + 1].v) {
                 lower = colorStops[i];
@@ -78,16 +76,11 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 break;
             }
         }
-
         let ratio = 0;
-        if (upper.v > lower.v) {
-            ratio = (val - lower.v) / (upper.v - lower.v);
-        }
-
+        if (upper.v > lower.v) ratio = (val - lower.v) / (upper.v - lower.v);
         const r = Math.round(lower.r + ratio * (upper.r - lower.r));
         const g = Math.round(lower.g + ratio * (upper.g - lower.g));
         const b = Math.round(lower.b + ratio * (upper.b - lower.b));
-
         return `rgb(${r}, ${g}, ${b})`;
     };
 
@@ -114,12 +107,33 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         return t.aqiGood || 'Good';
     };
 
+    const getPollutantColor = (type, val) => {
+        if (val === '--') return 'rgba(255,255,255,0.2)';
+        const v = parseFloat(val);
+        switch (type) {
+            case 'pm25':
+                if (v <= 12) return '#22c55e';
+                if (v <= 35) return '#eab308';
+                if (v <= 55) return '#f97316';
+                return '#ef4444';
+            case 'pm10':
+                if (v <= 54) return '#22c55e';
+                if (v <= 154) return '#eab308';
+                if (v <= 254) return '#f97316';
+                return '#ef4444';
+            default:
+                if (v <= 50) return '#22c55e';
+                if (v <= 100) return '#eab308';
+                return '#f97316';
+        }
+    };
+
     const getTempColor = (temp) => {
-        if (temp < 10) return '#3b82f6'; // Blue
-        if (temp < 20) return '#06b6d4'; // Cyan
-        if (temp < 28) return '#22c55e'; // Green
-        if (temp < 33) return '#f97316'; // Orange
-        return '#ef4444'; // Red
+        if (temp < 10) return '#3b82f6';
+        if (temp < 20) return '#06b6d4';
+        if (temp < 28) return '#22c55e';
+        if (temp < 33) return '#f97316';
+        return '#ef4444';
     };
 
     const getHumidityColor = (hum) => {
@@ -128,30 +142,24 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         return `hsl(210, 100%, ${lightness}%)`;
     };
 
-    // Restore simple Sun progress
     let sunProgress = 0;
     if (sunriseDate && sunsetDate && !isNaN(sunriseDate.getTime()) && !isNaN(sunsetDate.getTime())) {
-        if (targetLocalDate > sunsetDate) {
-            sunProgress = 100;
-        } else if (targetLocalDate > sunriseDate) {
+        if (targetLocalDate > sunsetDate) sunProgress = 100;
+        else if (targetLocalDate > sunriseDate) {
             const total = sunsetDate - sunriseDate;
             const cur = targetLocalDate - sunriseDate;
             sunProgress = Math.min(100, Math.max(0, (cur / total) * 100));
         }
     }
 
-    // Moon calculations prioritizing API data
     const getMoonEvents = (date, lat, lon, dailyData) => {
         let allEvents = [];
-
         if (dailyData?.moonrise && dailyData?.moonset) {
-            // Map API strings to date objects
             const apiEvents = [];
             dailyData.moonrise.forEach(t => t && apiEvents.push({ type: 'rise', time: new Date(t) }));
             dailyData.moonset.forEach(t => t && apiEvents.push({ type: 'set', time: new Date(t) }));
             allEvents = apiEvents.sort((a, b) => a.time - b.time);
         } else {
-            // Fallback to SunCalc if API data is missing
             const searchDates = [-1, 0, 1].map(offset => {
                 const d = new Date(date);
                 d.setDate(d.getDate() + offset);
@@ -165,26 +173,17 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 return events;
             }).sort((a, b) => a.time - b.time);
         }
-
-        // Current relevant cycle selection
-        // If moon is up, we want the current rise and next set
-        // If moon is down, we want the current set and next rise
-        let rise = allEvents.filter(e => e.type === 'rise' && e.time <= date).pop()?.time ||
-            allEvents.find(e => e.type === 'rise' && e.time > date)?.time;
-        let set = allEvents.filter(e => e.type === 'set' && e.time <= date).pop()?.time ||
-            allEvents.find(e => e.type === 'set' && e.time > date)?.time;
-
+        let rise = allEvents.filter(e => e.type === 'rise' && e.time <= date).pop()?.time || allEvents.find(e => e.type === 'rise' && e.time > date)?.time;
+        let set = allEvents.filter(e => e.type === 'set' && e.time <= date).pop()?.time || allEvents.find(e => e.type === 'set' && e.time > date)?.time;
         const todayTimes = SunCalc.getMoonTimes(date, lat, lon);
         if (!rise) rise = todayTimes.rise;
         if (!set) set = todayTimes.set;
-
         return { rise, set, alwaysUp: todayTimes.alwaysUp, alwaysDown: todayTimes.alwaysDown };
     };
 
     const moonEvents = getMoonEvents(targetLocalDate, lat, lon, daily);
     const moonIllum = SunCalc.getMoonIllumination(targetLocalDate);
 
-    // Moon phases with appropriate emojis
     const phasesInfo = {
         newMoon: { zh: '新月 / 朔', en: 'New Moon', emoji: '🌑' },
         waxingCrescent: { zh: '眉月', en: 'Waxing Crescent', emoji: '🌒' },
@@ -198,13 +197,12 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
 
     const phase = moonIllum.phase;
     let phaseKey = '';
-    // Use slightly broader ranges for main phases to match user expectations
     if (phase < 0.03 || phase > 0.97) phaseKey = 'newMoon';
     else if (phase < 0.22) phaseKey = 'waxingCrescent';
     else if (phase < 0.28) phaseKey = 'firstQuarter';
     else if (phase < 0.47) phaseKey = 'waxingGibbous';
     else if (phase < 0.53) phaseKey = 'fullMoon';
-    else if (phase < 0.71) phaseKey = 'waningGibbous'; // 0.72 -> 0.71 to be more inclusive of Last Quarter
+    else if (phase < 0.71) phaseKey = 'waningGibbous';
     else if (phase < 0.79) phaseKey = 'lastQuarter';
     else phaseKey = 'waningCrescent';
 
@@ -225,37 +223,24 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         const now = targetLocalDate.getTime();
         const rTime = moonEvents.rise.getTime();
         const sTime = moonEvents.set.getTime();
-
         if (rTime < sTime) {
-            // Normal cycle: Rise today, Set today/tomorrow
             if (now >= sTime) moonProgressPct = 100;
             else if (now >= rTime) moonProgressPct = ((now - rTime) / (sTime - rTime)) * 100;
             else moonProgressPct = 0;
         } else {
-            // Inverted cycle (crosses midnight): Set today, Rise today later
             if (now < sTime) {
-                // Currently setting from yesterday's rise
                 const assumedRise = rTime - 86400000;
                 moonProgressPct = ((now - assumedRise) / (sTime - assumedRise)) * 100;
             } else if (now > rTime) {
-                // Currently rising towards tomorrow's set
                 const assumedSet = sTime + 86400000;
                 moonProgressPct = ((now - rTime) / (assumedSet - rTime)) * 100;
-            } else {
-                // In between set and rise (down)
-                moonProgressPct = 0;
-            }
+            } else moonProgressPct = 0;
         }
-    } else {
-        moonProgressPct = moonEvents.alwaysUp ? 100 : 0;
-    }
+    } else moonProgressPct = moonEvents.alwaysUp ? 100 : 0;
     moonProgressPct = Math.min(100, Math.max(0, moonProgressPct));
 
     const windSpeed = current.wind_speed_10m || 0;
     const windAnimDuration = Math.max(0.5, 3 - (windSpeed * 0.05));
-    // wind_direction_10m is the direction wind originates from. 
-    // Navigation icon natively points to Top-Right (45 deg).
-    // Arrow should point to windDir + 180. To offset the native 45deg: windDir + 180 - 45 = windDir + 135
     const windDir = current.wind_direction_10m || 0;
     const windArrowRotation = (windDir + 135) % 360;
 
@@ -280,6 +265,35 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         );
     };
 
+    const SunMoonArc = ({ progress, startTime, endTime, icon: Icon, color }) => {
+        const angle = (progress / 100) * 180;
+        const radian = (angle - 180) * (Math.PI / 180);
+        const radius = 60;
+        const centerX = 80;
+        const centerY = 70;
+        const x = centerX + radius * Math.cos(radian);
+        const y = centerY + radius * Math.sin(radian);
+
+        return (
+            <div style={{ position: 'relative', height: '85px', width: '160px', margin: '0 auto' }}>
+                <svg width="160" height="85" viewBox="0 0 160 85">
+                    <path d="M 20 70 A 60 60 0 0 1 140 70" fill="none" stroke="var(--md-sys-color-outline-variant)" strokeWidth="2" strokeDasharray="4 4" opacity="0.3" />
+                    <path d="M 20 70 A 60 60 0 0 1 140 70" fill="none" stroke={color} strokeWidth="2" strokeDasharray="200" strokeDashoffset={200 - (progress / 100 * 200)} transition="stroke-dashoffset 1s ease" opacity="0.6" />
+                </svg>
+                <div style={{
+                    position: 'absolute', left: `${x}px`, top: `${y}px`, transform: 'translate(-50%, -50%)',
+                    color: color, filter: `drop-shadow(0 0 8px ${color})`, transition: 'all 1s ease', zIndex: 2
+                }}>
+                    <Icon size={20} fill="currentColor" />
+                </div>
+                <div style={{ position: 'absolute', bottom: '0', left: '0', width: '100%', display: 'flex', justifyContent: 'space-between', padding: '0 10px', fontSize: '0.75rem', opacity: 0.7 }}>
+                    <span>{startTime}</span>
+                    <span>{endTime}</span>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'var(--spacing-md)' }}>
             <style>{`
@@ -289,52 +303,14 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                     80% { opacity: 0.8; }
                     100% { transform: translateX(350px); opacity: 0; }
                 }
-                .wind-line {
-                    position: absolute;
-                    height: 2px;
-                    border-radius: 2px;
-                    animation: windBlow var(--wind-duration, 2s) linear infinite;
-                    background: var(--md-sys-color-on-surface);
-                    box-shadow: 0 0 8px currentColor;
-                }
-                .sun-progress-track {
-                    height: 6px;
-                    background: var(--md-sys-color-surface);
-                    border-radius: 3px;
-                    position: relative;
-                    margin-top: 16px;
-                    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-                }
-                .sun-progress-fill {
-                    height: 100%;
-                    background: linear-gradient(90deg, #fcd34d, #f59e0b, #d97706);
-                    border-radius: 3px;
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    transition: width 1s ease;
-                }
-                .sun-progress-icon {
-                    position: absolute;
-                    top: -12px;
-                    transform: translateX(-50%);
-                    color: #f59e0b;
-                    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
-                    transition: left 1s ease;
-                }
+                .wind-line { position: absolute; height: 2px; border-radius: 2px; animation: windBlow var(--wind-duration, 2s) linear infinite; background: var(--md-sys-color-on-surface); box-shadow: 0 0 8px currentColor; }
+                .pol-box { transition: all 0.3s ease; }
+                .pol-box:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.1) !important; }
             `}</style>
 
             {/* Wind */}
             <section className="card" style={{ padding: 'var(--spacing-md)', position: 'relative', overflow: 'hidden' }}>
-                <div style={{
-                    '--wind-duration': `${windAnimDuration}s`,
-                    position: 'absolute',
-                    inset: '-100px',
-                    pointerEvents: 'none',
-                    opacity: 0.5,
-                    transform: `rotate(${windDir + 90}deg)`,
-                    transformOrigin: 'center'
-                }}>
+                <div style={{ '--wind-duration': `${windAnimDuration}s`, position: 'absolute', inset: '-100px', pointerEvents: 'none', opacity: 0.5, transform: `rotate(${windDir + 90}deg)`, transformOrigin: 'center' }}>
                     <div className="wind-line" style={{ top: '30%', animationDelay: '0s', width: '40px' }}></div>
                     <div className="wind-line" style={{ top: '60%', animationDelay: `${windAnimDuration * 0.3}s`, width: '25px' }}></div>
                     <div className="wind-line" style={{ top: '80%', animationDelay: `${windAnimDuration * 0.7}s`, width: '45px' }}></div>
@@ -342,169 +318,191 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Wind size={20} />
-                        <span className="text-label">{t.wind}</span>
+                        <span className="text-label" style={{ fontWeight: 600 }}>{t.wind}</span>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                        <span className="text-body" style={{ fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{getWindDirectionLabel(windDir)}</span>
+                        <span className="text-body" style={{ fontWeight: 600, color: 'var(--md-sys-color-primary)', fontSize: '0.9rem' }}>{getWindDirectionLabel(windDir)}</span>
                     </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', position: 'relative' }}>
-                    <div>
-                        <p className="text-headline" style={{ marginBottom: '2px' }}>{current.wind_speed_10m} <span className="text-body">km/h</span></p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', marginTop: 'auto' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                            <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{current.wind_speed_10m}</span>
+                            <span className="text-body" style={{ opacity: 0.7, fontSize: '0.9rem' }}>km/h</span>
+                        </div>
                         {current.wind_gusts_10m !== undefined && (
-                            <p className="text-label" style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                                {t.windGust} {current.wind_gusts_10m} km/h
-                            </p>
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.8 }}>
+                                <span className="text-label" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>{t.windGust}</span>
+                                <span className="text-body" style={{ fontSize: '0.9rem', fontWeight: 500 }}>{current.wind_gusts_10m} <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>km/h</span></span>
+                            </div>
                         )}
                     </div>
-                    <Navigation
-                        size={24}
-                        color="var(--md-sys-color-on-surface)"
-                        style={{ transform: `rotate(${windArrowRotation}deg)`, transition: 'transform 1s ease' }}
-                        strokeWidth={2.5}
-                    />
+                    <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '12px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.1)' }}>
+                        <Navigation size={28} color="var(--md-sys-color-on-surface)" style={{ transform: `rotate(${windArrowRotation}deg)`, transition: 'transform 1s cubic-bezier(0.34, 1.56, 0.64, 1)' }} strokeWidth={2} />
+                    </div>
                 </div>
             </section>
 
             {/* Humidity */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', background: `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getHumidityColor(current.relative_humidity_2m)} 300%)` }}>
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getHumidityColor(current.relative_humidity_2m)} 400%)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
                     <Droplets size={20} color={getHumidityColor(current.relative_humidity_2m)} />
-                    <span className="text-label">{t.humidity}</span>
+                    <span className="text-label" style={{ fontWeight: 600 }}>{t.humidity}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <p className="text-headline">{current.relative_humidity_2m}%</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{current.relative_humidity_2m}</span>
+                        <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>%</span>
+                    </div>
                     <div style={{ textAlign: 'right' }}>
-                        <p className="text-body" style={{ color: getHumidityColor(current.relative_humidity_2m), fontWeight: 500, marginBottom: '2px' }}>
+                        <p className="text-body" style={{ color: getHumidityColor(current.relative_humidity_2m), fontWeight: 600, fontSize: '0.9rem' }}>
                             {current.relative_humidity_2m >= 65 ? (t.humWet || 'Humid') : current.relative_humidity_2m <= 30 ? (t.humDry || 'Dry') : (t.humComfortable || 'Comfortable')}
                         </p>
-                        {current.dew_point_2m !== undefined && (
-                            <p className="text-label" style={{ fontSize: '0.75rem', opacity: 0.8 }}>
-                                {t.dewPoint || 'Dew Point'} {current.dew_point_2m}°
-                            </p>
-                        )}
                     </div>
                 </div>
                 {renderCardValueBar(current.relative_humidity_2m, 100, getHumidityColor(current.relative_humidity_2m))}
             </section>
 
             {/* UV Index */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', background: `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getUVColor(uvIndex)} 300%)` }}>
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getUVColor(uvIndex)} 400%)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
                     <Sun size={20} color={getUVColor(uvIndex)} />
-                    <span className="text-label">{t.uvIndex}</span>
+                    <span className="text-label" style={{ fontWeight: 600 }}>{t.uvIndex}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <p className="text-headline" style={{ color: getUVColor(uvIndex) }}>{uvIndex}</p>
-                    <p className="text-body" style={{ color: getUVColor(uvIndex), fontWeight: 500, marginBottom: '4px' }}>
-                        {uvIndex >= 11 ? t.uvExtreme : uvIndex >= 8 ? t.uvVeryHigh : uvIndex >= 6 ? t.uvHigh : uvIndex >= 3 ? t.uvModerate : t.uvLow}
-                    </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
+                    <p className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1, color: getUVColor(uvIndex) }}>{uvIndex}</p>
+                    <p className="text-body" style={{ color: getUVColor(uvIndex), fontWeight: 600, fontSize: '0.9rem' }}>{uvIndex >= 11 ? t.uvExtreme : uvIndex >= 8 ? t.uvVeryHigh : uvIndex >= 6 ? t.uvHigh : uvIndex >= 3 ? t.uvModerate : t.uvLow}</p>
                 </div>
                 {renderCardValueBar(uvIndex, 15, getUVColor(uvIndex))}
             </section>
 
-            {/* Feels Like Temp */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', background: `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getTempColor(current.apparent_temperature)} 300%)` }}>
+            {/* Feels Like */}
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getTempColor(current.apparent_temperature)} 400%)` }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
-                    <Eye size={20} color={getTempColor(current.apparent_temperature)} />
-                    <span className="text-label">{t.feelsLike}</span>
+                    <Thermometer size={20} color={getTempColor(current.apparent_temperature)} />
+                    <span className="text-label" style={{ fontWeight: 600 }}>{t.feelsLike}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <p className="text-headline" style={{ color: getTempColor(current.apparent_temperature) }}>{Math.round(current.apparent_temperature)}°</p>
-                    <p className="text-body" style={{ color: getTempColor(current.apparent_temperature), fontWeight: 500, marginBottom: '4px' }}>
-                        {current.apparent_temperature >= 33 ? (t.tempHot || 'Hot') : current.apparent_temperature < 10 ? (t.tempCold || 'Cold') : (t.tempComfortable || 'Comfortable')}
-                    </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1, color: getTempColor(current.apparent_temperature) }}>{Math.round(current.apparent_temperature)}</span>
+                        <span className="text-body" style={{ color: getTempColor(current.apparent_temperature), fontSize: '1.2rem', fontWeight: 500 }}>°</span>
+                    </div>
+                    <p className="text-body" style={{ color: getTempColor(current.apparent_temperature), fontWeight: 600, fontSize: '0.9rem' }}>{current.apparent_temperature >= 33 ? (t.tempHot || 'Hot') : current.apparent_temperature < 10 ? (t.tempCold || 'Cold') : (t.tempComfortable || 'Comfortable')}</p>
                 </div>
-                {/* Scale from -10 to 40 for feel-like progress. span = 50 */}
                 {renderCardValueBar(Math.max(0, current.apparent_temperature + 10), 50, getTempColor(current.apparent_temperature))}
+            </section>
+
+            {/* Visibility */}
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, rgba(139, 92, 246, 0.1) 400%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
+                    <Eye size={20} color="#8b5cf6" />
+                    <span className="text-label" style={{ fontWeight: 600 }}>{t.visibility}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{current.visibility ? Math.round(current.visibility / 1000) : '--'}</span>
+                        <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>km</span>
+                    </div>
+                </div>
+                {renderCardValueBar(current.visibility ? Math.min(24000, current.visibility) : 0, 24000, "#8b5cf6")}
+            </section>
+
+            {/* Pressure */}
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, rgba(20, 184, 166, 0.1) 400%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
+                    <Gauge size={20} color="#14b8a6" />
+                    <span className="text-label" style={{ fontWeight: 600 }}>{t.pressure}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                        <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{Math.round(current.surface_pressure)}</span>
+                        <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>hPa</span>
+                    </div>
+                </div>
+                {renderCardValueBar(Math.max(0, current.surface_pressure - 950), 100, "#14b8a6")}
             </section>
 
             {/* AQI */}
             <section className="card" style={{ padding: 'var(--spacing-md)', background: aqi !== '--' ? `linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, ${getAQIColor(aqi)} 400%)` : 'var(--md-sys-color-surface-variant)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
                     <Activity size={20} color={getAQIColor(aqi)} />
-                    <span className="text-label">{t.aqi || 'Air Quality (AQI)'}</span>
+                    <span className="text-label" style={{ fontWeight: 600 }}>{t.aqi || 'Air Quality (AQI)'}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <p className="text-headline" style={{ color: getAQIColor(aqi) }}>{aqi}</p>
-                    {aqi !== '--' && (
-                        <p className="text-body" style={{ fontWeight: 500, color: getAQIColor(aqi), marginBottom: '4px' }}>
-                            {getAQILabel(aqi)}
-                        </p>
-                    )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 'auto', marginBottom: '8px' }}>
+                    <p className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1, color: getAQIColor(aqi) }}>{aqi}</p>
+                    {aqi !== '--' && <p className="text-body" style={{ fontWeight: 600, color: getAQIColor(aqi), fontSize: '1rem' }}>{getAQILabel(aqi)}</p>}
                 </div>
                 {aqi !== '--' && renderCardValueBar(aqi, 200, getAQIColor(aqi))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.75rem', color: 'var(--md-sys-color-on-surface-variant)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>PM2.5</span>
-                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{pm25}</span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>PM10</span>
-                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{pm10}</span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>NO2</span>
-                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{no2}</span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.4)', padding: '6px 0', borderRadius: '8px', flex: 1, margin: '0 4px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} className="pol-box">
-                        <span style={{ opacity: 0.8, marginBottom: '2px' }}>SO2</span>
-                        <span style={{ fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontSize: '0.85rem' }}>{so2}</span>
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', gap: '8px' }}>
+                    {[
+                        { label: 'PM2.5', val: pm25, type: 'pm25' },
+                        { label: 'PM10', val: pm10, type: 'pm10' },
+                        { label: 'NO2', val: no2, type: 'no2' },
+                        { label: 'SO2', val: so2, type: 'so2' }
+                    ].map(p => (
+                        <div key={p.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255, 255, 255, 0.04)', backdropFilter: 'blur(8px)', padding: '10px 0', borderRadius: '14px', flex: 1, border: '1px solid rgba(255,255,255,0.06)', position: 'relative' }} className="pol-box">
+                            <span style={{ opacity: 0.5, marginBottom: '2px', fontWeight: 600, fontSize: '0.65rem', letterSpacing: '0.05em' }}>{p.label}</span>
+                            <span style={{ fontWeight: 700, color: getPollutantColor(p.type, p.val), fontSize: '0.95rem' }}>{p.val}</span>
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            {/* Sunrise / Sunset & Moonrise / Moonset */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 0%, rgba(245, 158, 11, 0.05) 50%, rgba(129, 140, 248, 0.08) 100%)', position: 'relative' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h3 className="text-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Sparkles size={16} />
+            {/* Astronomy */}
+            <section className="card" style={{ padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 0%, rgba(245, 158, 11, 0.04) 40%, rgba(129, 140, 248, 0.06) 100%)', position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 className="text-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
+                        <Sparkles size={18} color="#f59e0b" />
                         {t.astronomy}
                     </h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--md-sys-color-on-surface-variant)' }}>
-                        {targetLocalDate > sunsetDate || targetLocalDate < sunriseDate ? <Moon size={16} /> : <Sun size={16} />}
-                        <span style={{ fontSize: '0.75rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}><Clock size={12} /> {targetLocalTimeStr}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', background: 'rgba(0,0,0,0.1)', borderRadius: '20px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                        <Clock size={14} />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{targetLocalTimeStr}</span>
                     </div>
                 </div>
 
                 {/* Sun Track */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Sunrise size={16} />
-                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{sunriseTime}</span>
+                <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Sunrise size={18} color="#fcd34d" />
+                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{sunriseTime}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{sunsetTime}</span>
+                            <Sunset size={18} color="#f59e0b" />
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{sunsetTime}</span>
-                        <Sunset size={16} />
-                    </div>
-                </div>
-                <div className="sun-progress-track">
-                    <div className="sun-progress-fill" style={{ width: `${sunProgress}%`, background: 'linear-gradient(90deg, #fcd34d, #f59e0b, #d97706)' }}></div>
-                    <div className="sun-progress-icon" style={{ left: `${sunProgress}%`, color: '#f59e0b', filter: 'drop-shadow(0 0 8px #f59e0b)' }}>
-                        <Sun size={14} fill="currentColor" />
+                    <div style={{ height: '6px', background: 'var(--md-sys-color-surface)', borderRadius: '3px', position: 'relative', marginTop: '12px' }}>
+                        <div style={{ width: `${sunProgress}%`, height: '100%', background: 'linear-gradient(90deg, #fcd34d, #f59e0b)', borderRadius: '3px', transition: 'width 1s ease' }}></div>
+                        <div style={{ position: 'absolute', left: `${sunProgress}%`, top: '50%', transform: 'translate(-50%, -50%)', filter: 'drop-shadow(0 0 6px #f59e0b)', transition: 'left 1s ease' }}>
+                            <Sun size={14} fill="#f59e0b" color="#f59e0b" />
+                        </div>
                     </div>
                 </div>
 
-                <div style={{ borderTop: '1px dashed var(--md-sys-color-outline-variant)', margin: '16px 0', opacity: 0.5 }}></div>
+                <div style={{ borderTop: '1px solid var(--md-sys-color-outline-variant)', margin: '4px 0 20px 0', opacity: 0.2 }}></div>
 
-                {/* Moon Section (Linear) */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Moon size={16} />
-                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonriseTimeText}</span>
+                {/* Moon Track */}
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Moon size={18} color="#c7d2fe" />
+                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{moonriseTimeText}</span>
+                        </div>
+                        <div style={{ padding: '2px 8px', background: 'rgba(129, 140, 248, 0.1)', borderRadius: '12px' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#818cf8' }}>{phaseName}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{moonsetTimeText}</span>
+                            <Moon size={18} color="#818cf8" />
+                        </div>
                     </div>
-                    <div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{phaseName}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span className="text-label" style={{ fontSize: '0.75rem' }}>{moonsetTimeText}</span>
-                        <Moon size={16} />
-                    </div>
-                </div>
-                <div className="sun-progress-track">
-                    <div className="sun-progress-fill" style={{ width: `${moonProgressPct}%`, background: 'linear-gradient(90deg, #c7d2fe, #818cf8, #4f46e5)' }}></div>
-                    <div className="sun-progress-icon" style={{ left: `${moonProgressPct}%`, color: '#818cf8', filter: 'drop-shadow(0 0 8px #818cf8)' }}>
-                        <Moon size={14} fill="currentColor" />
+                    <div style={{ height: '6px', background: 'var(--md-sys-color-surface)', borderRadius: '3px', position: 'relative', marginTop: '12px' }}>
+                        <div style={{ width: `${moonProgressPct}%`, height: '100%', background: 'linear-gradient(90deg, #c7d2fe, #818cf8)', borderRadius: '3px', transition: 'width 1s ease' }}></div>
+                        <div style={{ position: 'absolute', left: `${moonProgressPct}%`, top: '50%', transform: 'translate(-50%, -50%)', filter: 'drop-shadow(0 0 6px #818cf8)', transition: 'left 1s ease' }}>
+                            <Moon size={14} fill="#818cf8" color="#818cf8" />
+                        </div>
                     </div>
                 </div>
             </section>
