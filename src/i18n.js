@@ -61,7 +61,9 @@ export const translations = {
         windS: "S",
         windSW: "SW",
         windW: "W",
-        windNW: "NW"
+        windNW: "NW",
+        visibility: "Visibility",
+        pressure: "Pressure"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -125,7 +127,9 @@ export const translations = {
         windS: "南風",
         windSW: "西南風",
         windW: "西風",
-        windNW: "西北風"
+        windNW: "西北風",
+        visibility: "能見度",
+        pressure: "大氣壓力"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -189,7 +193,9 @@ export const translations = {
         windS: "南风",
         windSW: "西南风",
         windW: "西风",
-        windNW: "西北风"
+        windNW: "西北风",
+        visibility: "能见度",
+        pressure: "气压"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -253,7 +259,9 @@ export const translations = {
         windS: "南",
         windSW: "南西",
         windW: "西",
-        windNW: "北西"
+        windNW: "北西",
+        visibility: "視程",
+        pressure: "気圧"
     }
 };
 
