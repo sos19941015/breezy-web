@@ -17,7 +17,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         </div>
     );
 
-    const uvIndex = daily?.uv_index_max?.[0] || 0;
+    const uvIndex = current?.is_day === 0 ? 0 : (current?.uv_index !== undefined ? current.uv_index : (daily?.uv_index_max?.[0] || 0));
 
     const formatTimeOffset = (date, tz) => {
         try {
@@ -60,11 +60,11 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
     const so2 = current?.so2 !== undefined ? current.so2 : '--';
 
     const getUVColor = (uvi) => {
-        if (uvi <= 2) return '#22c55e'; // Green
-        if (uvi <= 5) return '#eab308'; // Yellow
-        if (uvi <= 7) return '#f97316'; // Orange
-        if (uvi <= 10) return '#ef4444'; // Red
-        return '#a855f7'; // Purple
+        if (uvi <= 2) return '#22c55e'; // Green (Low)
+        if (uvi <= 5) return '#eab308'; // Yellow (Moderate)
+        if (uvi <= 7) return '#f97316'; // Orange (High)
+        if (uvi <= 10) return '#ef4444'; // Red (Very High)
+        return '#a855f7'; // Purple (Extreme)
     };
 
     const interpolateColor = (val, colorStops) => {
@@ -259,7 +259,18 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
     const windDir = current.wind_direction_10m || 0;
     const windArrowRotation = (windDir + 135) % 360;
 
-    // Helper rendering function for cards
+    const getWindDirectionLabel = (degree) => {
+        const d = (degree + 22.5) % 360;
+        if (d < 45) return t.windN;
+        if (d < 90) return t.windNE;
+        if (d < 135) return t.windE;
+        if (d < 180) return t.windSE;
+        if (d < 225) return t.windS;
+        if (d < 270) return t.windSW;
+        if (d < 315) return t.windW;
+        return t.windNW;
+    };
+
     const renderCardValueBar = (val, maxVal, color) => {
         const pct = Math.min(100, Math.max(0, (val / maxVal) * 100));
         return (
@@ -333,9 +344,19 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                         <Wind size={20} />
                         <span className="text-label">{t.wind}</span>
                     </div>
+                    <div style={{ textAlign: 'right' }}>
+                        <span className="text-body" style={{ fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{getWindDirectionLabel(windDir)}</span>
+                    </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', position: 'relative' }}>
-                    <p className="text-headline">{current.wind_speed_10m} <span className="text-body">km/h</span></p>
+                    <div>
+                        <p className="text-headline" style={{ marginBottom: '2px' }}>{current.wind_speed_10m} <span className="text-body">km/h</span></p>
+                        {current.wind_gusts_10m !== undefined && (
+                            <p className="text-label" style={{ fontSize: '0.75rem', opacity: 0.8 }}>
+                                {t.windGust} {current.wind_gusts_10m} km/h
+                            </p>
+                        )}
+                    </div>
                     <Navigation
                         size={24}
                         color="var(--md-sys-color-on-surface)"
@@ -376,7 +397,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                     <p className="text-headline" style={{ color: getUVColor(uvIndex) }}>{uvIndex}</p>
                     <p className="text-body" style={{ color: getUVColor(uvIndex), fontWeight: 500, marginBottom: '4px' }}>
-                        {uvIndex > 10 ? 'Extreme' : uvIndex > 7 ? t.uvHigh : uvIndex > 2 ? t.uvModerate : t.uvLow}
+                        {uvIndex >= 11 ? t.uvExtreme : uvIndex >= 8 ? t.uvVeryHigh : uvIndex >= 6 ? t.uvHigh : uvIndex >= 3 ? t.uvModerate : t.uvLow}
                     </p>
                 </div>
                 {renderCardValueBar(uvIndex, 15, getUVColor(uvIndex))}
