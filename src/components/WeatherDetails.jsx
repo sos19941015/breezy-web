@@ -115,19 +115,41 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         const v = parseFloat(val);
         switch (type) {
             case 'pm25':
-                if (v <= 12) return '#22c55e';
-                if (v <= 35) return '#eab308';
-                if (v <= 55) return '#f97316';
-                return '#ef4444';
+                if (v <= 10) return '#4caf50'; // Green
+                if (v <= 20) return '#4caf50'; // Green (Level 2 isn't colored differently in EEAAQI but we follow AQI 0-20, 20-50 bounds essentially)
+                if (v <= 25) return '#fbc02d'; // Yellow
+                if (v <= 50) return '#ff9800'; // Orange
+                if (v <= 75) return '#f44336'; // Red
+                if (v <= 800) return '#9c27b0';// Purple
+                return '#795548'; // Brown
             case 'pm10':
-                if (v <= 54) return '#22c55e';
-                if (v <= 154) return '#eab308';
-                if (v <= 254) return '#f97316';
-                return '#ef4444';
+                if (v <= 20) return '#4caf50';
+                if (v <= 40) return '#4caf50';
+                if (v <= 50) return '#fbc02d';
+                if (v <= 100) return '#ff9800';
+                if (v <= 150) return '#f44336';
+                if (v <= 1200) return '#9c27b0';
+                return '#795548';
+            case 'no2':
+                if (v <= 40) return '#4caf50';
+                if (v <= 90) return '#4caf50';
+                if (v <= 120) return '#fbc02d';
+                if (v <= 230) return '#ff9800';
+                if (v <= 340) return '#f44336';
+                if (v <= 1000) return '#9c27b0';
+                return '#795548';
+            case 'so2': // Based partly on ozone / so2 standard curves
+                if (v <= 100) return '#4caf50';
+                if (v <= 200) return '#4caf50';
+                if (v <= 350) return '#fbc02d';
+                if (v <= 500) return '#ff9800';
+                if (v <= 750) return '#f44336';
+                if (v <= 1250) return '#9c27b0';
+                return '#795548';
             default:
-                if (v <= 50) return '#22c55e';
-                if (v <= 100) return '#eab308';
-                return '#f97316';
+                if (v <= 50) return '#4caf50';
+                if (v <= 100) return '#fbc02d';
+                return '#ff9800';
         }
     };
 
@@ -300,6 +322,21 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
     const visibilityVal = (current.visibility !== undefined && current.visibility !== null) ? Math.round(current.visibility / 1000) : '--';
     const pressureVal = (current.surface_pressure !== undefined && current.surface_pressure !== null) ? Math.round(current.surface_pressure) : '--';
 
+    const getVisibilityLabel = (vis) => {
+        if (vis === '--') return '';
+        if (vis >= 10) return t.visExcellent;
+        if (vis >= 4) return t.visGood;
+        if (vis >= 1) return t.visModerate;
+        return t.visPoor;
+    };
+
+    const getPressureLabel = (pres) => {
+        if (pres === '--') return '';
+        if (pres > 1020) return t.presHigh;
+        if (pres < 1000) return t.presLow;
+        return t.presNormal;
+    };
+
     return (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 'var(--spacing-md)' }}>
             <style>{`
@@ -399,7 +436,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
             </section>
 
             {/* Visibility */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, rgba(139, 92, 246, 0.1) 400%)' }}>
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, #8b5cf6 400%)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
                     <Eye size={20} color="#8b5cf6" />
                     <span className="text-label" style={{ fontWeight: 600 }}>{t.visibility}</span>
@@ -409,12 +446,19 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                         <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{visibilityVal}</span>
                         {visibilityVal !== '--' && <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>km</span>}
                     </div>
+                    {visibilityVal !== '--' && (
+                        <div style={{ textAlign: 'right' }}>
+                            <p className="text-body" style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.9rem' }}>
+                                {getVisibilityLabel(visibilityVal)}
+                            </p>
+                        </div>
+                    )}
                 </div>
                 {renderCardValueBar(current.visibility ? Math.min(24000, current.visibility) : 0, 24000, "#8b5cf6")}
             </section>
 
             {/* Pressure */}
-            <section className="card" style={{ padding: 'var(--spacing-md)', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, rgba(20, 184, 166, 0.1) 400%)' }}>
+            <section className="card" style={{ padding: 'var(--spacing-md)', background: 'linear-gradient(180deg, var(--md-sys-color-surface-variant) 40%, #14b8a6 400%)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 'var(--spacing-sm)' }}>
                     <Gauge size={20} color="#14b8a6" />
                     <span className="text-label" style={{ fontWeight: 600 }}>{t.pressure}</span>
@@ -424,6 +468,13 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                         <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{pressureVal}</span>
                         {pressureVal !== '--' && <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>hPa</span>}
                     </div>
+                    {pressureVal !== '--' && (
+                        <div style={{ textAlign: 'right' }}>
+                            <p className="text-body" style={{ color: '#14b8a6', fontWeight: 600, fontSize: '0.9rem' }}>
+                                {getPressureLabel(pressureVal)}
+                            </p>
+                        </div>
+                    )}
                 </div>
                 {renderCardValueBar(current.surface_pressure ? Math.max(0, current.surface_pressure - 950) : 0, 100, "#14b8a6")}
             </section>

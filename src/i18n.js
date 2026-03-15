@@ -64,7 +64,15 @@ export const translations = {
         windW: "W",
         windNW: "NW",
         visibility: "Visibility",
-        pressure: "Pressure"
+        pressure: "Pressure",
+        openMap: "Open in Map",
+        visExcellent: "Excellent",
+        visGood: "Good",
+        visModerate: "Moderate",
+        visPoor: "Poor",
+        presHigh: "High",
+        presNormal: "Normal",
+        presLow: "Low"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -131,7 +139,15 @@ export const translations = {
         windW: "西風",
         windNW: "西北風",
         visibility: "能見度",
-        pressure: "大氣壓力"
+        pressure: "大氣壓力",
+        openMap: "在地圖中開啟",
+        visExcellent: "極佳",
+        visGood: "良好",
+        visModerate: "普通",
+        visPoor: "不佳",
+        presHigh: "高壓",
+        presNormal: "正常",
+        presLow: "低壓"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -198,7 +214,15 @@ export const translations = {
         windW: "西风",
         windNW: "西北风",
         visibility: "能见度",
-        pressure: "气压"
+        pressure: "气压",
+        openMap: "在地图中打开",
+        visExcellent: "极佳",
+        visGood: "良好",
+        visModerate: "普通",
+        visPoor: "不佳",
+        presHigh: "高压",
+        presNormal: "正常",
+        presLow: "低压"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -265,7 +289,15 @@ export const translations = {
         windW: "西",
         windNW: "北西",
         visibility: "視程",
-        pressure: "気圧"
+        pressure: "気圧",
+        openMap: "地図で開く",
+        visExcellent: "非常に良い",
+        visGood: "良い",
+        visModerate: "普通",
+        visPoor: "悪い",
+        presHigh: "高",
+        presNormal: "正常",
+        presLow: "低"
     }
 };
 

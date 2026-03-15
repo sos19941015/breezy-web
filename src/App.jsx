@@ -249,8 +249,18 @@ function App() {
                 ) : (
                     <>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-                            <MapPin size={28} color="var(--md-sys-color-primary)" />
-                            <h1 className="text-title" style={{ fontSize: '1.75rem', fontWeight: 600 }}>{locationName}</h1>
+                            <a
+                                href={currentCoords ? `https://www.windy.com/?${Number(currentCoords.lat).toFixed(3)},${Number(currentCoords.lon).toFixed(3)},12,d:picker` : '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', textDecoration: 'none', color: 'inherit', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
+                                onMouseLeave={e => e.currentTarget.style.opacity = 1}
+                                title={t.openMap}
+                            >
+                                <MapPin size={28} color="var(--md-sys-color-primary)" />
+                                <h1 className="text-title" style={{ fontSize: '1.75rem', fontWeight: 600, margin: 0 }}>{locationName}</h1>
+                            </a>
                             <button
                                 onClick={toggleFavorite}
                                 title={isFavorite() ? t.removeFromFavorites : t.addToFavorites}
