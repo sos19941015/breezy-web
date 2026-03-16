@@ -9,6 +9,8 @@ import DailyForecast from './components/DailyForecast';
 import WeatherDetails from './components/WeatherDetails';
 import About from './components/About';
 import Favorites from './components/Favorites';
+import MapPicker from './components/MapPicker';
+import 'leaflet/dist/leaflet.css';
 
 function App() {
     const [lang, setLang] = useState('zh');
@@ -22,6 +24,7 @@ function App() {
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [error, setError] = useState(null);
+    const [isMapOpen, setIsMapOpen] = useState(false);
 
     // Favorites from localStorage
     const [favorites, setFavorites] = useState(() => {
@@ -249,18 +252,16 @@ function App() {
                 ) : (
                     <>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-                            <a
-                                href={currentCoords ? `https://www.windy.com/?${Number(currentCoords.lat).toFixed(3)},${Number(currentCoords.lon).toFixed(3)},12,d:picker` : '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <div
+                                onClick={() => setIsMapOpen(true)}
                                 style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', textDecoration: 'none', color: 'inherit', cursor: 'pointer', transition: 'opacity 0.2s' }}
                                 onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
                                 onMouseLeave={e => e.currentTarget.style.opacity = 1}
-                                title={t.openMap}
+                                title={t.selectLocation}
                             >
                                 <MapPin size={28} color="var(--md-sys-color-primary)" />
                                 <h1 className="text-title" style={{ fontSize: '1.75rem', fontWeight: 600, margin: 0 }}>{locationName}</h1>
-                            </a>
+                            </div>
                             <button
                                 onClick={toggleFavorite}
                                 title={isFavorite() ? t.removeFromFavorites : t.addToFavorites}
@@ -366,6 +367,15 @@ function App() {
 
                 <About t={t} />
             </main>
+
+            <MapPicker
+                isOpen={isMapOpen}
+                onClose={() => setIsMapOpen(false)}
+                onSelect={loadWeatherForCoords}
+                initialPos={currentCoords ? { lat: currentCoords.lat, lng: currentCoords.lon } : null}
+                t={t}
+                lang={lang}
+            />
         </div>
     );
 }

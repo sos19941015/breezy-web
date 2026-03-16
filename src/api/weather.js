@@ -89,14 +89,29 @@ export const reverseGeocode = async (lat, lon, lang = 'en') => {
             headers: { 'User-Agent': 'BreezyWeatherApp/1.0' }
         });
         const data = await response.json();
+        
         if (data && data.address) {
             const a = data.address;
-            const specific = a.amenity || a.building || a.neighbourhood || a.road;
-            const district = a.suburb || a.city_district || a.town || a.village || a.city || a.county;
-            if (specific && district && specific !== district) {
-                return `${district} ${specific}`;
+            
+            // Priority: District/City level info (translated)
+            const mainName = a.city || a.town || a.village || a.suburb || a.city_district || a.county || a.state;
+            const detailName = a.amenity || a.building || a.neighbourhood || a.road;
+            
+            let result = "";
+            if (detailName && mainName && detailName !== mainName) {
+                result = `${mainName} ${detailName}`;
+            } else {
+                result = mainName || detailName || "Unknown Location";
             }
-            return specific || district || a.state || null;
+            
+            // Clean up duplicated strings like "纽约;紐約"
+            if (result.includes(';')) {
+                const parts = result.split(';');
+                // If the second part is just a variant, pick the first one
+                result = parts[0];
+            }
+            
+            return result;
         }
         return null;
     } catch (error) {
