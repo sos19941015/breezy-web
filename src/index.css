@@ -512,7 +512,211 @@ button:hover {
     color: var(--md-sys-color-on-surface);
 }
 
+
 .res-admin {
     font-size: 0.8rem;
     color: var(--md-sys-color-on-surface-variant);
 }
+
+/* Header Styles */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    min-height: 48px;
+    gap: var(--spacing-md);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex: 1;
+    min-width: 0;
+}
+
+.location-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    transition: opacity 0.2s;
+    min-width: 0;
+}
+
+.location-trigger:hover {
+    opacity: 0.8;
+}
+
+.location-name {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.action-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.icon-btn-small {
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.icon-btn-small:hover {
+    transform: scale(1.1);
+}
+
+.lang-toggle-btn {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.lang-flag {
+    width: 28px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.lang-flag-small {
+    width: 20px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    margin-top: 8px;
+    background-color: var(--md-sys-color-surface);
+    border-radius: var(--md-sys-shape-corner-medium);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-xs);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.source-menu {
+    left: 0;
+    min-width: 180px;
+}
+
+.lang-menu {
+    right: 0;
+    min-width: 140px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.menu-item.active {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.border-top {
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 0;
+}
+
+/* Search Area Styles */
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-form {
+    display: flex;
+    width: 100%;
+    gap: var(--spacing-sm);
+}
+
+.search-input {
+    flex: 1;
+    padding: 8px 16px;
+    border-radius: var(--md-sys-shape-corner-medium);
+    border: none;
+    background-color: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    outline: none;
+    font: inherit;
+}
+
+.cancel-btn {
+    padding: 8px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .app-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .header-left {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .header-right {
+        justify-content: space-between;
+        background-color: var(--md-sys-color-surface-variant);
+        padding: 4px;
+        border-radius: 100px;
+    }
+
+    .location-name {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .location-name {
+        font-size: 1.25rem;
+    }
+    
+    .app-header {
+        margin-bottom: var(--spacing-md);
+    }
+}

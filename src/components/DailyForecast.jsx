@@ -28,9 +28,17 @@ export default function DailyForecast({ daily, t, lang }) {
 
                     return (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span className="text-body" style={{ width: '60px', fontWeight: i === 0 ? '600' : '400' }}>
-                                {getDayName(day.time, i === 0, t, lang)}
-                            </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', width: '70px', flexShrink: 0 }}>
+                                <span className="text-body" style={{ fontWeight: i === 0 ? '600' : '400', lineHeight: 1.2 }}>
+                                    {getDayName(day.time, i === 0, t, lang)}
+                                </span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--md-sys-color-on-surface-variant)', opacity: 0.8 }}>
+                                    {(() => {
+                                        const d = new Date(day.time);
+                                        return `${d.getMonth() + 1}/${d.getDate()}`;
+                                    })()}
+                                </span>
+                            </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', flex: 1, justifyContent: 'center' }}>
                                 <Icon size={24} color={condition.color} />
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>

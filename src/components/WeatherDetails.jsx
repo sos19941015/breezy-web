@@ -542,17 +542,27 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
 
                 {/* Moon Track */}
                 <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Moon size={18} color="#c7d2fe" />
-                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{moonriseTimeText}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '4px', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Moon size={16} color="#c7d2fe" />
+                            <span className="text-label" style={{ fontSize: '0.75rem', fontWeight: 500 }}>{moonriseTimeText}</span>
                         </div>
-                        <div style={{ padding: '2px 8px', background: 'rgba(129, 140, 248, 0.1)', borderRadius: '12px' }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#818cf8' }}>{phaseName}</span>
+                        <div style={{ 
+                            padding: '2px 8px', 
+                            background: 'rgba(129, 140, 248, 0.12)', 
+                            borderRadius: '12px', 
+                            whiteSpace: 'nowrap',
+                            maxWidth: '70px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }}>
+                            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#818cf8' }}>
+                                {phaseName}
+                            </span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{moonsetTimeText}</span>
-                            <Moon size={18} color="#818cf8" />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="text-label" style={{ fontSize: '0.75rem', fontWeight: 500 }}>{moonsetTimeText}</span>
+                            <Moon size={16} color="#818cf8" />
                         </div>
                     </div>
                     <div style={{ height: '6px', background: 'var(--md-sys-color-surface)', borderRadius: '3px', position: 'relative', marginTop: '12px' }}>

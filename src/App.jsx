@@ -224,19 +224,19 @@ function App() {
     return (
         <div className="app-container">
             {/* Header */}
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-xl)', minHeight: '48px' }}>
+            <header className="app-header">
                 {isSearching ? (
-                    <div style={{ position: 'relative', width: '100%' }}>
-                        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', width: '100%', gap: 'var(--spacing-sm)' }}>
+                    <div className="search-container">
+                        <form onSubmit={handleSearchSubmit} className="search-form">
                             <input
                                 autoFocus
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={t.searchPlaceholder}
-                                style={{ flex: 1, padding: '8px 16px', borderRadius: 'var(--md-sys-shape-corner-medium)', border: 'none', backgroundColor: 'var(--md-sys-color-surface-variant)', color: 'var(--md-sys-color-on-surface-variant)', outline: 'none', font: 'inherit' }}
+                                className="search-input"
                             />
-                            <button type="button" onClick={() => { setIsSearching(false); setSearchResults([]); }} style={{ padding: '8px', color: 'var(--md-sys-color-on-surface-variant)' }}>{t.cancel}</button>
+                            <button type="button" onClick={() => { setIsSearching(false); setSearchResults([]); }} className="cancel-btn">{t.cancel}</button>
                         </form>
                         {searchResults.length > 0 && (
                             <div className="search-dropdown">
@@ -253,118 +253,77 @@ function App() {
                     </div>
                 ) : (
                     <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+                        <div className="header-left">
                             <div
                                 onClick={() => setIsMapOpen(true)}
-                                style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', textDecoration: 'none', color: 'inherit', cursor: 'pointer', transition: 'opacity 0.2s' }}
-                                onMouseEnter={e => e.currentTarget.style.opacity = 0.8}
-                                onMouseLeave={e => e.currentTarget.style.opacity = 1}
+                                className="location-trigger"
                                 title={t.selectLocation}
                             >
                                 <MapPin size={28} color="var(--md-sys-color-primary)" />
-                                <h1 className="text-title" style={{ fontSize: '1.75rem', fontWeight: 600, margin: 0 }}>{locationName}</h1>
+                                <h1 className="location-name">{locationName}</h1>
                             </div>
-                            <button
-                                onClick={toggleFavorite}
-                                title={isFavorite() ? t.removeFromFavorites : t.addToFavorites}
-                                style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'transform 0.2s ease' }}
-                                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
-                                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                            >
-                                <Star
-                                    size={22}
-                                    color={isFavorite() ? '#f59e0b' : 'var(--md-sys-color-on-surface-variant)'}
-                                    fill={isFavorite() ? '#f59e0b' : 'none'}
-                                />
-                            </button>
-                            <div className="source-menu-container" style={{ position: 'relative' }}>
+                            <div className="action-icons">
                                 <button
-                                    onClick={() => setIsSourceMenuOpen(!isSourceMenuOpen)}
-                                    title={t.weatherSources}
-                                    style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', transition: 'transform 0.2s ease' }}
-                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
-                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                    onClick={toggleFavorite}
+                                    title={isFavorite() ? t.removeFromFavorites : t.addToFavorites}
+                                    className="icon-btn-small"
                                 >
-                                    <ExternalLink size={20} />
+                                    <Star
+                                        size={22}
+                                        color={isFavorite() ? '#f59e0b' : 'var(--md-sys-color-on-surface-variant)'}
+                                        fill={isFavorite() ? '#f59e0b' : 'none'}
+                                    />
                                 </button>
-                                {isSourceMenuOpen && (
-                                    <div style={{
-                                        position: 'absolute', top: '100%', left: 0, marginTop: '8px',
-                                        backgroundColor: 'var(--md-sys-color-surface)',
-                                        borderRadius: 'var(--md-sys-shape-corner-medium)',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-                                        padding: 'var(--spacing-xs)',
-                                        zIndex: 100,
-                                        display: 'flex', flexDirection: 'column', gap: '4px',
-                                        minWidth: '180px',
-                                        border: '1px solid var(--md-sys-color-outline-variant)'
-                                    }}>
-                                        <a
-                                            href={`https://www.accuweather.com/en/search-locations?query=${data?.latitude},${data?.longitude}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
-                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
-                                                borderRadius: '4px', fontSize: '0.9rem'
-                                            }}
-                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
-                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                        >
-                                            {t.accuWeather}
-                                        </a>
-                                        <a
-                                            href={`https://weather.com/${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja-JP' : 'en-US'}/weather/today/l/${data?.latitude},${data?.longitude}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
-                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
-                                                borderRadius: '4px', fontSize: '0.9rem',
-                                                borderTop: '1px solid var(--md-sys-color-outline-variant)'
-                                            }}
-                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
-                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                        >
-                                            {t.weatherChannel}
-                                        </a>
-                                        <a
-                                            href={`https://www.msn.com/${lang === 'zh' ? 'zh-tw' : lang === 'zh-CN' ? 'zh-cn' : lang === 'ja' ? 'ja-jp' : 'en-us'}/weather?lat=${data?.latitude}&lon=${data?.longitude}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
-                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
-                                                borderRadius: '4px', fontSize: '0.9rem',
-                                                borderTop: '1px solid var(--md-sys-color-outline-variant)'
-                                            }}
-                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
-                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                        >
-                                            {t.msnWeather}
-                                        </a>
-                                        <a
-                                            href={`https://www.google.com/search?q=weather+${encodeURIComponent(locationName)}&hl=${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja' : 'en'}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
-                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
-                                                borderRadius: '4px', fontSize: '0.9rem',
-                                                borderTop: '1px solid var(--md-sys-color-outline-variant)'
-                                            }}
-                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
-                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                                        >
-                                            {t.googleWeather}
-                                        </a>
-                                    </div>
-                                )}
+                                <div className="source-menu-container" style={{ position: 'relative' }}>
+                                    <button
+                                        onClick={() => setIsSourceMenuOpen(!isSourceMenuOpen)}
+                                        title={t.weatherSources}
+                                        className="icon-btn-small"
+                                    >
+                                        <ExternalLink size={20} />
+                                    </button>
+                                    {isSourceMenuOpen && (
+                                        <div className="dropdown-menu source-menu">
+                                            <a
+                                                href={`https://www.accuweather.com/en/search-locations?query=${data?.latitude},${data?.longitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="menu-item"
+                                            >
+                                                {t.accuWeather}
+                                            </a>
+                                            <a
+                                                href={`https://weather.com/${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja-JP' : 'en-US'}/weather/today/l/${data?.latitude},${data?.longitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="menu-item border-top"
+                                            >
+                                                {t.weatherChannel}
+                                            </a>
+                                            <a
+                                                href={`https://www.msn.com/${lang === 'zh' ? 'zh-tw' : lang === 'zh-CN' ? 'zh-cn' : lang === 'ja' ? 'ja-jp' : 'en-us'}/weather?lat=${data?.latitude}&lon=${data?.longitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="menu-item border-top"
+                                            >
+                                                {t.msnWeather}
+                                            </a>
+                                            <a
+                                                href={`https://www.google.com/search?q=weather+${encodeURIComponent(locationName)}&hl=${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja' : 'en'}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="menu-item border-top"
+                                            >
+                                                {t.googleWeather}
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', position: 'relative' }} className="lang-menu-container">
+                        <div className="header-right lang-menu-container">
                             <button
-                                style={{ padding: '8px', display: 'flex', alignItems: 'center', borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                                className="lang-toggle-btn"
                                 aria-label="Toggle Language Menu"
                                 onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
                                 title="Change Language"
@@ -372,57 +331,42 @@ function App() {
                                 <img
                                     src={currentLangObj.flag}
                                     alt={currentLangObj.alt}
-                                    style={{ width: '28px', height: '28px', objectFit: 'cover', borderRadius: '50%', border: '1px solid var(--md-sys-color-outline-variant)' }}
+                                    className="lang-flag"
                                 />
                             </button>
 
                             {isLangMenuOpen && (
-                                <div style={{
-                                    position: 'absolute', top: '100%', right: '100%', marginTop: '8px',
-                                    backgroundColor: 'var(--md-sys-color-surface)',
-                                    borderRadius: 'var(--md-sys-shape-corner-medium)',
-                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-                                    padding: 'var(--spacing-xs)',
-                                    zIndex: 10,
-                                    display: 'flex', flexDirection: 'column', gap: '4px',
-                                    minWidth: '140px',
-                                    border: '1px solid var(--md-sys-color-outline-variant)'
-                                }}>
+                                <div className="dropdown-menu lang-menu">
                                     {languages.map((l) => (
                                         <button
                                             key={l.code}
                                             onClick={() => selectLanguage(l.code)}
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px',
-                                                border: 'none', background: lang === l.code ? 'var(--md-sys-color-surface-variant)' : 'transparent',
-                                                color: 'var(--md-sys-color-on-surface)',
-                                                borderRadius: '4px', cursor: 'pointer',
-                                                textAlign: 'left', width: '100%'
-                                            }}
+                                            className={`menu-item ${lang === l.code ? 'active' : ''}`}
                                         >
-                                            <img src={l.flag} alt={l.alt} style={{ width: '20px', height: '20px', objectFit: 'cover', borderRadius: '50%' }} />
-                                            <span style={{ fontSize: '0.9rem', fontWeight: lang === l.code ? '600' : '400' }}>{l.name}</span>
+                                            <img src={l.flag} alt={l.alt} className="lang-flag-small" />
+                                            <span style={{ fontWeight: lang === l.code ? '600' : '400' }}>{l.name}</span>
                                         </button>
                                     ))}
                                 </div>
                             )}
 
-                            <button style={{ padding: '8px' }} aria-label="Locate Me" onClick={handleLocateUser} title="Locate Me">
+                            <button className="icon-btn" aria-label="Locate Me" onClick={handleLocateUser} title="Locate Me">
                                 <Navigation size={24} />
                             </button>
-                            <button style={{ padding: '8px' }} aria-label="Refresh" onClick={() => loadWeatherForCoords(data?.latitude || fallbackCoords.lat, data?.longitude || fallbackCoords.lon, locationName)}>
-                                <RefreshCw size={24} className={loading ? "spin" : ""} style={{ transition: 'transform 0.3s ease' }} />
+                            <button className="icon-btn" aria-label="Refresh" onClick={() => loadWeatherForCoords(data?.latitude || fallbackCoords.lat, data?.longitude || fallbackCoords.lon, locationName)}>
+                                <RefreshCw size={24} className={loading ? "spin" : ""} />
                             </button>
-                            <button style={{ padding: '8px' }} aria-label="Map" onClick={() => setIsMapOpen(true)} title={t.selectLocation}>
+                            <button className="icon-btn" aria-label="Map" onClick={() => setIsMapOpen(true)} title={t.selectLocation}>
                                 <Map size={24} />
                             </button>
-                            <button style={{ padding: '8px' }} aria-label="Search" onClick={() => setIsSearching(true)}>
+                            <button className="icon-btn" aria-label="Search" onClick={() => setIsSearching(true)}>
                                 <Search size={24} />
                             </button>
                         </div>
                     </>
                 )}
             </header>
+
 
             {error && (
                 <div style={{ padding: 'var(--spacing-md)', backgroundColor: '#ffb4ab', color: '#690005', borderRadius: 'var(--md-sys-shape-corner-medium)', marginBottom: 'var(--spacing-md)', display: 'flex', alignItems: 'center', gap: '8px' }}>
