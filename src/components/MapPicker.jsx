@@ -14,7 +14,7 @@ const DefaultIcon = L.icon({
     shadowSize: [41, 41]
 });
 
-const MapPicker = ({ isOpen, onClose, onSelect, initialPos, t, lang }) => {
+const MapPicker = ({ isOpen, onClose, onSelect, initialPos, t, lang, initialSearchQuery }) => {
     const mapRef = useRef(null);
     const markerRef = useRef(null);
     const containerRef = useRef(null);
@@ -22,10 +22,26 @@ const MapPicker = ({ isOpen, onClose, onSelect, initialPos, t, lang }) => {
     const [isConfirming, setIsConfirming] = useState(false);
     
     // Search state
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedName, setSelectedName] = useState(null);
+
+    // Sync initialSearchQuery when map opens and trigger search
+    useEffect(() => {
+        if (isOpen && initialSearchQuery) {
+            setSearchQuery(initialSearchQuery);
+            const performInitialSearch = async () => {
+                setIsSearching(true);
+                const results = await geocodeCity(initialSearchQuery, lang);
+                if (results) {
+                    setSearchResults(results);
+                }
+                setIsSearching(false);
+            };
+            performInitialSearch();
+        }
+    }, [isOpen, initialSearchQuery]);
 
     // Initialize map
     useEffect(() => {

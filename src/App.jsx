@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, RefreshCw, AlertCircle, Globe, Navigation, Star } from 'lucide-react';
+import { Search, MapPin, RefreshCw, AlertCircle, Globe, Navigation, Star, Map, ExternalLink } from 'lucide-react';
 import { fetchWeather, fetchCityByIP, geocodeCity, reverseGeocode } from './api/weather';
 import { translations } from './i18n';
 
@@ -25,6 +25,7 @@ function App() {
     const [searchResults, setSearchResults] = useState([]);
     const [error, setError] = useState(null);
     const [isMapOpen, setIsMapOpen] = useState(false);
+    const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false);
 
     // Favorites from localStorage
     const [favorites, setFavorites] = useState(() => {
@@ -154,15 +155,16 @@ function App() {
     // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (!e.target.closest('.lang-menu-container')) {
+            if (!e.target.closest('.lang-menu-container') && !e.target.closest('.source-menu-container')) {
                 setIsLangMenuOpen(false);
+                setIsSourceMenuOpen(false);
             }
         };
-        if (isLangMenuOpen) {
+        if (isLangMenuOpen || isSourceMenuOpen) {
             document.addEventListener('click', handleClickOutside);
         }
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [isLangMenuOpen]);
+    }, [isLangMenuOpen, isSourceMenuOpen]);
 
     const selectLanguage = async (code) => {
         setLang(code);
@@ -275,6 +277,90 @@ function App() {
                                     fill={isFavorite() ? '#f59e0b' : 'none'}
                                 />
                             </button>
+                            <div className="source-menu-container" style={{ position: 'relative' }}>
+                                <button
+                                    onClick={() => setIsSourceMenuOpen(!isSourceMenuOpen)}
+                                    title={t.weatherSources}
+                                    style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', transition: 'transform 0.2s ease' }}
+                                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.2)'}
+                                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                    <ExternalLink size={20} />
+                                </button>
+                                {isSourceMenuOpen && (
+                                    <div style={{
+                                        position: 'absolute', top: '100%', left: 0, marginTop: '8px',
+                                        backgroundColor: 'var(--md-sys-color-surface)',
+                                        borderRadius: 'var(--md-sys-shape-corner-medium)',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                                        padding: 'var(--spacing-xs)',
+                                        zIndex: 100,
+                                        display: 'flex', flexDirection: 'column', gap: '4px',
+                                        minWidth: '180px',
+                                        border: '1px solid var(--md-sys-color-outline-variant)'
+                                    }}>
+                                        <a
+                                            href={`https://www.accuweather.com/en/search-locations?query=${data?.latitude},${data?.longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
+                                                borderRadius: '4px', fontSize: '0.9rem'
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        >
+                                            {t.accuWeather}
+                                        </a>
+                                        <a
+                                            href={`https://weather.com/${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja-JP' : 'en-US'}/weather/today/l/${data?.latitude},${data?.longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
+                                                borderRadius: '4px', fontSize: '0.9rem',
+                                                borderTop: '1px solid var(--md-sys-color-outline-variant)'
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        >
+                                            {t.weatherChannel}
+                                        </a>
+                                        <a
+                                            href={`https://www.msn.com/${lang === 'zh' ? 'zh-tw' : lang === 'zh-CN' ? 'zh-cn' : lang === 'ja' ? 'ja-jp' : 'en-us'}/weather?lat=${data?.latitude}&lon=${data?.longitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
+                                                borderRadius: '4px', fontSize: '0.9rem',
+                                                borderTop: '1px solid var(--md-sys-color-outline-variant)'
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        >
+                                            {t.msnWeather}
+                                        </a>
+                                        <a
+                                            href={`https://www.google.com/search?q=weather+${encodeURIComponent(locationName)}&hl=${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja' : 'en'}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                                                textDecoration: 'none', color: 'var(--md-sys-color-on-surface)',
+                                                borderRadius: '4px', fontSize: '0.9rem',
+                                                borderTop: '1px solid var(--md-sys-color-outline-variant)'
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-variant)'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        >
+                                            {t.googleWeather}
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div style={{ display: 'flex', gap: 'var(--spacing-sm)', position: 'relative' }} className="lang-menu-container">
                             <button
@@ -327,6 +413,9 @@ function App() {
                             <button style={{ padding: '8px' }} aria-label="Refresh" onClick={() => loadWeatherForCoords(data?.latitude || fallbackCoords.lat, data?.longitude || fallbackCoords.lon, locationName)}>
                                 <RefreshCw size={24} className={loading ? "spin" : ""} style={{ transition: 'transform 0.3s ease' }} />
                             </button>
+                            <button style={{ padding: '8px' }} aria-label="Map" onClick={() => setIsMapOpen(true)} title={t.selectLocation}>
+                                <Map size={24} />
+                            </button>
                             <button style={{ padding: '8px' }} aria-label="Search" onClick={() => setIsSearching(true)}>
                                 <Search size={24} />
                             </button>
@@ -375,6 +464,7 @@ function App() {
                 initialPos={currentCoords ? { lat: currentCoords.lat, lng: currentCoords.lon } : null}
                 t={t}
                 lang={lang}
+                initialSearchQuery={searchQuery}
             />
         </div>
     );

@@ -75,7 +75,12 @@ export const translations = {
         visPoor: "Poor",
         presHigh: "High",
         presNormal: "Normal",
-        presLow: "Low"
+        presLow: "Low",
+        weatherSources: "Other Weather Sources",
+        accuWeather: "AccuWeather",
+        weatherChannel: "The Weather Channel",
+        msnWeather: "MSN Weather",
+        googleWeather: "Google Weather"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -153,7 +158,12 @@ export const translations = {
         visPoor: "不佳",
         presHigh: "高壓",
         presNormal: "正常",
-        presLow: "低壓"
+        presLow: "低壓",
+        weatherSources: "其他天氣來源",
+        accuWeather: "AccuWeather",
+        weatherChannel: "The Weather Channel",
+        msnWeather: "MSN 天氣",
+        googleWeather: "Google 天氣"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -231,7 +241,12 @@ export const translations = {
         visPoor: "不佳",
         presHigh: "高压",
         presNormal: "正常",
-        presLow: "低压"
+        presLow: "低压",
+        weatherSources: "其他天气来源",
+        accuWeather: "AccuWeather",
+        weatherChannel: "The Weather Channel",
+        msnWeather: "MSN 天气",
+        googleWeather: "Google 天气"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -309,7 +324,12 @@ export const translations = {
         visPoor: "悪い",
         presHigh: "高",
         presNormal: "正常",
-        presLow: "低"
+        presLow: "低",
+        weatherSources: "その他の気象ニュース",
+        accuWeather: "AccuWeather",
+        weatherChannel: "The Weather Channel",
+        msnWeather: "MSN 天気",
+        googleWeather: "Google 天気"
     }
 };
 
