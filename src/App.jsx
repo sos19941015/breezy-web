@@ -321,34 +321,36 @@ function App() {
                                 </div>
                             </div>
                         </div>
-                        <div className="header-right lang-menu-container">
-                            <button
-                                className="lang-toggle-btn"
-                                aria-label="Toggle Language Menu"
-                                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                                title="Change Language"
-                            >
-                                <img
-                                    src={currentLangObj.flag}
-                                    alt={currentLangObj.alt}
-                                    className="lang-flag"
-                                />
-                            </button>
+                        <div className="header-right">
+                            <div className="lang-menu-container" style={{ position: 'relative', display: 'flex' }}>
+                                <button
+                                    className="lang-toggle-btn"
+                                    aria-label="Toggle Language Menu"
+                                    onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                                    title="Change Language"
+                                >
+                                    <img
+                                        src={currentLangObj.flag}
+                                        alt={currentLangObj.alt}
+                                        className="lang-flag"
+                                    />
+                                </button>
 
-                            {isLangMenuOpen && (
-                                <div className="dropdown-menu lang-menu">
-                                    {languages.map((l) => (
-                                        <button
-                                            key={l.code}
-                                            onClick={() => selectLanguage(l.code)}
-                                            className={`menu-item ${lang === l.code ? 'active' : ''}`}
-                                        >
-                                            <img src={l.flag} alt={l.alt} className="lang-flag-small" />
-                                            <span style={{ fontWeight: lang === l.code ? '600' : '400' }}>{l.name}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                                {isLangMenuOpen && (
+                                    <div className="dropdown-menu lang-menu">
+                                        {languages.map((l) => (
+                                            <button
+                                                key={l.code}
+                                                onClick={() => selectLanguage(l.code)}
+                                                className={`menu-item ${lang === l.code ? 'active' : ''}`}
+                                            >
+                                                <img src={l.flag} alt={l.alt} className="lang-flag-small" />
+                                                <span style={{ fontWeight: lang === l.code ? '600' : '400' }}>{l.name}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
 
                             <button className="icon-btn" aria-label="Locate Me" onClick={handleLocateUser} title="Locate Me">
                                 <Navigation size={24} />
