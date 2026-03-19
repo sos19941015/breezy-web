@@ -541,36 +541,37 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 <div style={{ borderTop: '1px solid var(--md-sys-color-outline-variant)', margin: '4px 0 20px 0', opacity: 0.2 }}></div>
 
                 {/* Moon Track */}
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--md-sys-color-on-surface-variant)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Moon size={16} color="#c7d2fe" />
-                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{moonriseTimeText}</span>
-                        </div>
-                        <div style={{ 
-                            padding: '4px 12px', 
-                            background: 'rgba(129, 140, 248, 0.12)', 
-                            borderRadius: '12px', 
-                            whiteSpace: 'nowrap',
-                            maxWidth: '120px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            textAlign: 'center',
-                            margin: '4px 0'
-                        }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#818cf8' }}>
-                                {phaseName}
-                            </span>
+                            <Moon size={18} color="#c7d2fe" />
+                            <span className="text-label" style={{ fontSize: '0.85rem', fontWeight: 500 }}>{moonriseTimeText}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span className="text-label" style={{ fontSize: '0.8rem', fontWeight: 500 }}>{moonsetTimeText}</span>
-                            <Moon size={16} color="#818cf8" />
+                            <span className="text-label" style={{ fontSize: '0.85rem', fontWeight: 500 }}>{moonsetTimeText}</span>
+                            <Moon size={18} color="#818cf8" />
                         </div>
                     </div>
-                    <div style={{ height: '6px', background: 'var(--md-sys-color-surface)', borderRadius: '3px', position: 'relative', marginTop: '12px' }}>
+
+                    <div style={{ height: '6px', background: 'var(--md-sys-color-surface)', borderRadius: '3px', position: 'relative', margin: '4px 0' }}>
                         <div style={{ width: `${moonProgressPct}%`, height: '100%', background: 'linear-gradient(90deg, #c7d2fe, #818cf8)', borderRadius: '3px', transition: 'width 1s ease' }}></div>
                         <div style={{ position: 'absolute', left: `${moonProgressPct}%`, top: '50%', transform: 'translate(-50%, -50%)', filter: 'drop-shadow(0 0 6px #818cf8)', transition: 'left 1s ease' }}>
                             <Moon size={14} fill="#818cf8" color="#818cf8" />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ 
+                            padding: '4px 16px', 
+                            background: 'rgba(129, 140, 248, 0.12)', 
+                            borderRadius: '100px', 
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#818cf8' }}>
+                                {phaseName}
+                            </span>
                         </div>
                     </div>
                 </div>
