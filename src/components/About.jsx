@@ -99,7 +99,7 @@ export default function About({ t }) {
             <div style={{ borderTop: '1px solid var(--md-sys-color-outline-variant)', paddingTop: 'var(--spacing-md)', marginTop: 'var(--spacing-sm)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', color: 'var(--md-sys-color-on-surface-variant)', fontSize: '0.85rem' }}>
                 <span>Made with</span>
                 <Icons.Heart size={16} fill="#ff4d4d" color="#ff4d4d" />
-                <span>for the USER</span>
+                <span>by Rex</span>
             </div>
         </section>
     );

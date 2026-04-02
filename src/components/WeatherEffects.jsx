@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Star, Snowflake, Droplets, Zap } from 'lucide-react';
 
 export default function WeatherEffects({ bgClass }) {
@@ -9,6 +10,38 @@ export default function WeatherEffects({ bgClass }) {
     const isCloudy = bgClass.includes('cloudy');
     const isClearNight = bgClass.includes('clear-night');
     const isClearDay = bgClass.includes('clear-day');
+
+    // Pre-generate random values so they don't change on re-render
+    const rainDrops = useMemo(() =>
+        Array.from({ length: 20 }, () => ({
+            left: `${Math.random() * 100}%`,
+            height: `${10 + Math.random() * 20}px`,
+            duration: `${0.5 + Math.random() * 0.5}s`,
+            delay: `${Math.random()}s`
+        })), []
+    );
+
+    const snowFlakes = useMemo(() =>
+        Array.from({ length: 25 }, () => ({
+            left: `${Math.random() * 100}%`,
+            duration: `${3 + Math.random() * 3}s`,
+            delay: `${-Math.random() * 5}s`,
+            blur: `blur(${Math.random() > 0.5 ? 1 : 0}px)`,
+            size: 8 + Math.random() * 12
+        })), []
+    );
+
+    const stars = useMemo(() =>
+        Array.from({ length: 15 }, () => ({
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            duration: `${2 + Math.random() * 3}s`,
+            delay: `${Math.random() * 2}s`,
+            size: 4 + Math.random() * 6
+        })), []
+    );
+
+    const lightningDelay = useMemo(() => `${Math.random() * 5}s`, []);
 
     return (
         <div style={{
@@ -104,15 +137,15 @@ export default function WeatherEffects({ bgClass }) {
             )}
 
             {/* Raindrops */}
-            {(isRain || isThunder) && Array.from({ length: 20 }).map((_, i) => (
+            {(isRain || isThunder) && rainDrops.map((drop, i) => (
                 <div key={`rain-${i}`} className="effect-item" style={{
                     top: -20,
-                    left: `${Math.random() * 100}%`,
+                    left: drop.left,
                     width: '2px',
-                    height: `${10 + Math.random() * 20}px`,
+                    height: drop.height,
                     background: 'rgba(255,255,255,0.6)',
-                    animation: `fall-rain ${0.5 + Math.random() * 0.5}s linear infinite`,
-                    animationDelay: `${Math.random()}s`,
+                    animation: `fall-rain ${drop.duration} linear infinite`,
+                    animationDelay: drop.delay,
                     borderRadius: '2px'
                 }} />
             ))}
@@ -123,32 +156,32 @@ export default function WeatherEffects({ bgClass }) {
                     position: 'absolute',
                     inset: 0,
                     animation: 'lightning-flash 6s infinite',
-                    animationDelay: `${Math.random() * 5}s`
+                    animationDelay: lightningDelay
                 }} />
             )}
 
             {/* Snow */}
-            {isSnow && Array.from({ length: 25 }).map((_, i) => (
+            {isSnow && snowFlakes.map((flake, i) => (
                 <div key={`snow-${i}`} className="effect-item" style={{
                     top: -20,
-                    left: `${Math.random() * 100}%`,
-                    animation: `fall-snow ${3 + Math.random() * 3}s linear infinite`,
-                    animationDelay: `${-Math.random() * 5}s`,
-                    filter: `blur(${Math.random() > 0.5 ? 1 : 0}px)`
+                    left: flake.left,
+                    animation: `fall-snow ${flake.duration} linear infinite`,
+                    animationDelay: flake.delay,
+                    filter: flake.blur
                 }}>
-                    <Snowflake size={8 + Math.random() * 12} />
+                    <Snowflake size={flake.size} />
                 </div>
             ))}
 
             {/* Stars */}
-            {isClearNight && Array.from({ length: 15 }).map((_, i) => (
+            {isClearNight && stars.map((star, i) => (
                 <div key={`star-${i}`} className="effect-item" style={{
-                    top: `${Math.random() * 100}%`,
-                    left: `${Math.random() * 100}%`,
-                    animation: `twinkle-star ${2 + Math.random() * 3}s infinite`,
-                    animationDelay: `${Math.random() * 2}s`
+                    top: star.top,
+                    left: star.left,
+                    animation: `twinkle-star ${star.duration} infinite`,
+                    animationDelay: star.delay
                 }}>
-                    <Star fill="currentColor" size={4 + Math.random() * 6} />
+                    <Star fill="currentColor" size={star.size} />
                 </div>
             ))}
 

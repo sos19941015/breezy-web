@@ -4,7 +4,8 @@ import { getWeatherCondition } from '../api/weather';
 
 const getDayName = (dateStr, isToday, t, lang) => {
     if (isToday) return t.today;
-    return new Date(dateStr).toLocaleDateString(lang === 'zh' ? 'zh-TW' : 'en-US', { weekday: 'short' });
+    const localeMap = { 'zh': 'zh-TW', 'zh-CN': 'zh-CN', 'ja': 'ja-JP', 'en': 'en-US' };
+    return new Date(dateStr).toLocaleDateString(localeMap[lang] || 'en-US', { weekday: 'short' });
 }
 
 export default function DailyForecast({ daily, t, lang }) {

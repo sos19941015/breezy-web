@@ -10,11 +10,20 @@ export default function HourlyForecast({ hourly, t, lang }) {
 
     if (!hourly) return <section className="card skeleton" style={{ height: '140px' }}></section>;
 
-    // Get current hour index roughly
-    const currentHour = new Date().getHours();
-    // Show next 48 hours
-    const nextHours = hourly.time.slice(currentHour, currentHour + 48).map((time, idx) => {
-        const dataIdx = currentHour + idx;
+    // Find the closest hour index by matching against the API's time array
+    const now = new Date();
+    let startIdx = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < hourly.time.length; i++) {
+        const diff = Math.abs(now - new Date(hourly.time[i]));
+        if (diff < minDiff) {
+            minDiff = diff;
+            startIdx = i;
+        }
+    }
+    // Show next 48 hours from the matched index
+    const nextHours = hourly.time.slice(startIdx, startIdx + 48).map((time, idx) => {
+        const dataIdx = startIdx + idx;
         const dateObj = new Date(time);
         return {
             time: dateObj.getHours() + ':00',

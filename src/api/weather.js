@@ -121,10 +121,13 @@ export const reverseGeocode = async (lat, lon, lang = 'en') => {
 };
 
 export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
-    // Default is Taipei City
+    // Default is Taipei City — standardize to 5 decimal places
+    const latStr = Number(lat).toFixed(5);
+    const lonStr = Number(lon).toFixed(5);
+
     const params = new URLSearchParams({
-        latitude: lat,
-        longitude: lon,
+        latitude: latStr,
+        longitude: lonStr,
         current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,dew_point_2m,precipitation,uv_index,visibility,surface_pressure',
         hourly: 'temperature_2m,weather_code,precipitation_probability',
         daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max,precipitation_sum',
@@ -132,8 +135,8 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
     });
 
     const aqParams = new URLSearchParams({
-        latitude: lat,
-        longitude: lon,
+        latitude: latStr,
+        longitude: lonStr,
         current: 'us_aqi,pm10,pm2_5,nitrogen_dioxide,sulphur_dioxide',
         timezone: 'auto'
     });
@@ -142,7 +145,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
         const [weatherRes, aqRes, astroRes] = await Promise.all([
             fetch(`${BASE_URL}?${params.toString()}`),
             fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`),
-            fetch(`https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`)
+            fetch(`https://api.open-meteo.com/v1/astronomy?latitude=${latStr}&longitude=${lonStr}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`)
         ]).catch(() => [null, null, null]);
 
         if (!weatherRes || !weatherRes.ok) {

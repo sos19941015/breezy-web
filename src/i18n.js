@@ -80,7 +80,8 @@ export const translations = {
         accuWeather: "AccuWeather",
         weatherChannel: "The Weather Channel",
         msnWeather: "MSN Weather",
-        googleWeather: "Google Weather"
+        googleWeather: "Google Weather",
+        windy: "Windy.com"
     },
     zh: {
         searchPlaceholder: "搜尋城市...",
@@ -163,7 +164,8 @@ export const translations = {
         accuWeather: "AccuWeather",
         weatherChannel: "The Weather Channel",
         msnWeather: "MSN 天氣",
-        googleWeather: "Google 天氣"
+        googleWeather: "Google 天氣",
+        windy: "Windy.com"
     },
     'zh-CN': {
         searchPlaceholder: "搜索城市...",
@@ -246,7 +248,8 @@ export const translations = {
         accuWeather: "AccuWeather",
         weatherChannel: "The Weather Channel",
         msnWeather: "MSN 天气",
-        googleWeather: "Google 天气"
+        googleWeather: "Google 天气",
+        windy: "Windy.com"
     },
     ja: {
         searchPlaceholder: "都市を検索...",
@@ -329,7 +332,8 @@ export const translations = {
         accuWeather: "AccuWeather",
         weatherChannel: "The Weather Channel",
         msnWeather: "MSN 天気",
-        googleWeather: "Google 天気"
+        googleWeather: "Google 天気",
+        windy: "Windy.com"
     }
 };
 

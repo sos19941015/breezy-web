@@ -13,7 +13,12 @@ import MapPicker from './components/MapPicker';
 import 'leaflet/dist/leaflet.css';
 
 function App() {
-    const [lang, setLang] = useState('zh');
+    const [lang, setLang] = useState(() => {
+        try {
+            const saved = localStorage.getItem('breezy-lang');
+            return saved && ['zh', 'en', 'ja', 'zh-CN'].includes(saved) ? saved : 'zh';
+        } catch { return 'zh'; }
+    });
     const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
     const t = translations[lang];
 
@@ -23,6 +28,7 @@ function App() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false);
@@ -102,18 +108,17 @@ function App() {
         e.preventDefault();
         if (!searchQuery.trim()) return;
 
-        setLoading(true);
+        setSearchLoading(true);
         setError(null);
         const results = await geocodeCity(searchQuery, lang);
 
         if (results && results.length > 0) {
             setSearchResults(results);
-            setLoading(false);
         } else {
             setError(`${t.cannotFind} ${searchQuery}`);
-            setLoading(false);
             setSearchResults([]);
         }
+        setSearchLoading(false);
     };
 
     const handleSelectCity = async (city) => {
@@ -152,6 +157,18 @@ function App() {
         initApp();
     }, []);
 
+    // Auto-refresh weather data every 15 minutes (silently, no loading spinner)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (currentCoords && !loading) {
+                fetchWeather(currentCoords.lat, currentCoords.lon).then(weatherData => {
+                    if (weatherData) setData(weatherData);
+                });
+            }
+        }, 15 * 60 * 1000);
+        return () => clearInterval(interval);
+    }, [currentCoords, loading]);
+
     // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -169,6 +186,7 @@ function App() {
     const selectLanguage = async (code) => {
         setLang(code);
         setIsLangMenuOpen(false);
+        try { localStorage.setItem('breezy-lang', code); } catch {}
 
         // Translate the current city name if we have data
         if (locationName && locationName !== translations[lang].locating && data) {
@@ -236,6 +254,7 @@ function App() {
                                 placeholder={t.searchPlaceholder}
                                 className="search-input"
                             />
+                            {searchLoading && <RefreshCw size={18} className="spin" style={{ color: 'var(--md-sys-color-primary)', flexShrink: 0 }} />}
                             <button type="button" onClick={() => { setIsSearching(false); setSearchResults([]); }} className="cancel-btn">{t.cancel}</button>
                         </form>
                         {searchResults.length > 0 && (
@@ -285,7 +304,7 @@ function App() {
                                     {isSourceMenuOpen && (
                                         <div className="dropdown-menu source-menu">
                                             <a
-                                                href={`https://www.accuweather.com/en/search-locations?query=${data?.latitude},${data?.longitude}`}
+                                                href={`https://www.accuweather.com/en/search-locations?query=${Number(currentCoords?.lat || data?.latitude || fallbackCoords.lat).toFixed(5)},${Number(currentCoords?.lon || data?.longitude || fallbackCoords.lon).toFixed(5)}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="menu-item"
@@ -293,7 +312,7 @@ function App() {
                                                 {t.accuWeather}
                                             </a>
                                             <a
-                                                href={`https://weather.com/${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja-JP' : 'en-US'}/weather/today/l/${data?.latitude},${data?.longitude}`}
+                                                href={`https://weather.com/${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja-JP' : 'en-US'}/weather/today/l/${Number(currentCoords?.lat || data?.latitude || fallbackCoords.lat).toFixed(5)},${Number(currentCoords?.lon || data?.longitude || fallbackCoords.lon).toFixed(5)}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="menu-item border-top"
@@ -301,7 +320,7 @@ function App() {
                                                 {t.weatherChannel}
                                             </a>
                                             <a
-                                                href={`https://www.msn.com/${lang === 'zh' ? 'zh-tw' : lang === 'zh-CN' ? 'zh-cn' : lang === 'ja' ? 'ja-jp' : 'en-us'}/weather?lat=${data?.latitude}&lon=${data?.longitude}`}
+                                                href={`https://www.msn.com/${lang === 'zh' ? 'zh-tw' : lang === 'zh-CN' ? 'zh-cn' : lang === 'ja' ? 'ja-jp' : 'en-us'}/weather?lat=${Number(currentCoords?.lat || data?.latitude || fallbackCoords.lat).toFixed(5)}&lon=${Number(currentCoords?.lon || data?.longitude || fallbackCoords.lon).toFixed(5)}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="menu-item border-top"
@@ -315,6 +334,14 @@ function App() {
                                                 className="menu-item border-top"
                                             >
                                                 {t.googleWeather}
+                                            </a>
+                                            <a
+                                                href={`https://www.windy.com/${Number(currentCoords?.lat || data?.latitude || fallbackCoords.lat).toFixed(5)}/${Number(currentCoords?.lon || data?.longitude || fallbackCoords.lon).toFixed(5)}?${Number(currentCoords?.lat || data?.latitude || fallbackCoords.lat).toFixed(5)},${Number(currentCoords?.lon || data?.longitude || fallbackCoords.lon).toFixed(5)},11`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="menu-item border-top"
+                                            >
+                                                {t.windy}
                                             </a>
                                         </div>
                                     )}
@@ -391,7 +418,7 @@ function App() {
 
                 <DailyForecast daily={data?.daily} t={t} lang={lang} />
 
-                {data && <WeatherDetails lat={data.latitude} lon={data.longitude} current={data.current} daily={data.daily} timezone={data.timezone} t={t} lang={lang} />}
+                {data && <WeatherDetails lat={currentCoords?.lat || data.latitude} lon={currentCoords?.lon || data.longitude} current={data.current} daily={data.daily} timezone={data.timezone} t={t} lang={lang} />}
 
                 <Favorites
                     favorites={favorites}
