@@ -106,13 +106,16 @@ const MapPicker = ({ isOpen, onClose, onSelect, initialPos, t, lang, initialSear
         try {
             // Priority 1: Use the name from search result if position is unchanged
             let finalName = selectedName;
+            let finalCityName = selectedName;
             
             // Priority 2: Use Reverse Geocode
             if (!finalName) {
-                finalName = await reverseGeocode(position.lat, position.lng, lang);
+                const geoResult = await reverseGeocode(position.lat, position.lng, lang);
+                finalName = geoResult?.name;
+                finalCityName = geoResult?.cityName || finalName;
             }
             
-            onSelect(position.lat, position.lng, finalName || t.currentLocation);
+            onSelect(position.lat, position.lng, finalName || t.currentLocation, finalCityName || finalName || t.currentLocation);
             onClose();
         } catch (err) {
             console.error(err);

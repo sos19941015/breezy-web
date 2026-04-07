@@ -93,25 +93,39 @@ export const reverseGeocode = async (lat, lon, lang = 'en') => {
         if (data && data.address) {
             const a = data.address;
             
-            // Priority: District/City level info (translated)
+            // Google Weather search name: district + 里/village level
+            // e.g. "信義區西村里" — specific enough for Google, not too granular
+            const district = a.suburb || a.city_district || a.city || a.town || '';
+            const village = a.neighbourhood || a.village || '';
+            let cityName;
+            if (district && village && district !== village) {
+                cityName = `${district}${village}`;
+            } else {
+                cityName = district || village || a.city || a.town || a.county || a.state || '';
+            }
+            
+            // Display name: city/town + detail for richer UI display
             const mainName = a.city || a.town || a.village || a.suburb || a.city_district || a.county || a.state;
             const detailName = a.amenity || a.building || a.neighbourhood || a.road;
             
-            let result = "";
+            let displayName = "";
             if (detailName && mainName && detailName !== mainName) {
-                result = `${mainName} ${detailName}`;
+                displayName = `${mainName} ${detailName}`;
             } else {
-                result = mainName || detailName || "Unknown Location";
+                displayName = mainName || detailName || "Unknown Location";
             }
             
             // Clean up duplicated strings like "纽约;紐約"
-            if (result.includes(';')) {
-                const parts = result.split(';');
-                // If the second part is just a variant, pick the first one
-                result = parts[0];
+            if (displayName.includes(';')) {
+                displayName = displayName.split(';')[0];
             }
             
-            return result;
+            let cleanCityName = cityName;
+            if (cleanCityName.includes(';')) {
+                cleanCityName = cleanCityName.split(';')[0];
+            }
+            
+            return { name: displayName, cityName: cleanCityName || displayName };
         }
         return null;
     } catch (error) {

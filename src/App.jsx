@@ -54,15 +54,15 @@ function App() {
     // Default coordinate for Taipei City fallback
     const fallbackCoords = { lat: 25.0330, lon: 121.5654, name: lang === 'zh' ? '台北市' : 'Taipei City' };
 
-    const loadWeatherForCoords = async (lat, lon, name) => {
+    const loadWeatherForCoords = async (lat, lon, name, cityName) => {
         setLoading(true);
         setError(null);
         const weatherData = await fetchWeather(lat, lon);
         if (weatherData) {
             setData(weatherData);
             setLocationName(name);
-            setCurrentCoords({ lat, lon, name });
-            localStorage.setItem('breezy-last-coords', JSON.stringify({ lat, lon, name }));
+            setCurrentCoords({ lat, lon, name, cityName: cityName || name });
+            localStorage.setItem('breezy-last-coords', JSON.stringify({ lat, lon, name, cityName: cityName || name }));
         } else {
             setError(t.failedFetch);
         }
@@ -90,8 +90,10 @@ function App() {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     const { latitude, longitude } = position.coords;
-                    const cityName = await reverseGeocode(latitude, longitude, lang) || t.currentLocation;
-                    await loadWeatherForCoords(latitude, longitude, cityName);
+                    const geoResult = await reverseGeocode(latitude, longitude, lang);
+                    const displayName = geoResult?.name || t.currentLocation;
+                    const searchName = geoResult?.cityName || displayName;
+                    await loadWeatherForCoords(latitude, longitude, displayName, searchName);
                 },
                 async (err) => {
                     console.warn("Geolocation fetch error:", err);
@@ -141,8 +143,10 @@ function App() {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
-                const cityName = await reverseGeocode(latitude, longitude, lang) || t.currentLocation;
-                await loadWeatherForCoords(latitude, longitude, cityName);
+                const geoResult = await reverseGeocode(latitude, longitude, lang);
+                const displayName = geoResult?.name || t.currentLocation;
+                const searchName = geoResult?.cityName || displayName;
+                await loadWeatherForCoords(latitude, longitude, displayName, searchName);
             },
             async (err) => {
                 console.warn(err);
@@ -328,7 +332,7 @@ function App() {
                                                 {t.msnWeather}
                                             </a>
                                             <a
-                                                href={`https://www.google.com/search?q=weather+${encodeURIComponent(locationName)}&hl=${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja' : 'en'}`}
+                                                href={`https://www.google.com/search?q=weather+${encodeURIComponent(currentCoords?.cityName || locationName || '')}&hl=${lang === 'zh' ? 'zh-TW' : lang === 'zh-CN' ? 'zh-CN' : lang === 'ja' ? 'ja' : 'en'}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="menu-item border-top"
