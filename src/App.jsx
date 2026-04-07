@@ -99,7 +99,7 @@ function App() {
                     console.warn("Geolocation fetch error:", err);
                     await fallbackToIP();
                 },
-                { timeout: 10000, enableHighAccuracy: true }
+                { timeout: 15000, enableHighAccuracy: true, maximumAge: 300000 }
             );
         } else {
             await fallbackToIP();
@@ -152,7 +152,7 @@ function App() {
                 console.warn(err);
                 await fallbackToIP();
             },
-            { timeout: 10000, enableHighAccuracy: true }
+            { timeout: 15000, enableHighAccuracy: true, maximumAge: 300000 }
         );
     };
 
