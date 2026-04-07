@@ -104,15 +104,12 @@ export const reverseGeocode = async (lat, lon, lang = 'en') => {
                 cityName = district || village || a.city || a.town || a.county || a.state || '';
             }
             
-            // Display name: city/town + detail for richer UI display
-            const mainName = a.city || a.town || a.village || a.suburb || a.city_district || a.county || a.state;
-            const detailName = a.amenity || a.building || a.neighbourhood || a.road;
-            
+            // Display name: district + 里/village for UI (e.g. "信義區 西村里")
             let displayName = "";
-            if (detailName && mainName && detailName !== mainName) {
-                displayName = `${mainName} ${detailName}`;
+            if (district && village && district !== village) {
+                displayName = `${district} ${village}`;
             } else {
-                displayName = mainName || detailName || "Unknown Location";
+                displayName = district || village || a.city || a.town || a.county || a.state || "Unknown Location";
             }
             
             // Clean up duplicated strings like "纽约;紐約"

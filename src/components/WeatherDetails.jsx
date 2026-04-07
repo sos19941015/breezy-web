@@ -392,7 +392,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                     <Droplets size={20} color={getHumidityColor(current.relative_humidity_2m)} />
                     <span className="text-label" style={{ fontWeight: 600 }}>{t.humidity}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', marginBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                         <span className="text-headline" style={{ fontSize: '2.5rem', fontWeight: 500, lineHeight: 1 }}>{current.relative_humidity_2m}</span>
                         <span className="text-body" style={{ opacity: 0.7, fontSize: '1rem' }}>%</span>
@@ -403,6 +403,12 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                         </p>
                     </div>
                 </div>
+                {current.dew_point_2m !== undefined && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', opacity: 0.8 }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--md-sys-color-on-surface-variant)' }}>{t.dewPoint}:</span>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{Math.round(current.dew_point_2m)}°</span>
+                    </div>
+                )}
                 {renderCardValueBar(current.relative_humidity_2m, 100, getHumidityColor(current.relative_humidity_2m))}
             </section>
 
