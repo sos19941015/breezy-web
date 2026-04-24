@@ -152,7 +152,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
         longitude: lonStr,
         current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,dew_point_2m,precipitation,uv_index,visibility,surface_pressure',
         hourly: 'temperature_2m,weather_code,precipitation_probability',
-        daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,precipitation_probability_max,precipitation_sum',
+        daily: 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,sunrise,sunset,moonrise,moonset,precipitation_probability_max,precipitation_sum',
         timezone: 'auto'
     });
 
@@ -165,10 +165,10 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
 
     try {
         const [weatherRes, aqRes, astroRes] = await Promise.all([
-            fetch(`${BASE_URL}?${params.toString()}`),
-            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`),
-            fetch(`https://api.open-meteo.com/v1/astronomy?latitude=${latStr}&longitude=${lonStr}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`)
-        ]).catch(() => [null, null, null]);
+            fetch(`${BASE_URL}?${params.toString()}`).catch(() => null),
+            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${aqParams.toString()}`).catch(() => null),
+            fetch(`https://api.open-meteo.com/v1/astronomy?latitude=${latStr}&longitude=${lonStr}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`).catch(() => null)
+        ]);
 
         if (!weatherRes || !weatherRes.ok) {
             throw new Error('Weather data fetch failed');
@@ -176,6 +176,7 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
 
         const data = await weatherRes.json();
 
+        // Merge Air Quality
         if (aqRes && aqRes.ok) {
             const aqData = await aqRes.json();
             if (aqData && aqData.current) {
@@ -187,19 +188,19 @@ export const fetchWeather = async (lat = 25.0330, lon = 121.5654) => {
             }
         }
 
+        // Merge Astronomy (if available, it provides better precision for some locales)
         if (astroRes && astroRes.ok) {
             const astroData = await astroRes.json();
             if (astroData && astroData.daily) {
-                // Merge accurate astronomy data
-                data.daily.moonrise = astroData.daily.moonrise;
-                data.daily.moonset = astroData.daily.moonset;
-                // Prefer astronomy API for sunrise/sunset too as it's more specific
-                data.daily.sunrise = astroData.daily.sunrise;
-                data.daily.sunset = astroData.daily.sunset;
+                data.daily.moonrise = astroData.daily.moonrise || data.daily.moonrise;
+                data.daily.moonset = astroData.daily.moonset || data.daily.moonset;
+                data.daily.sunrise = astroData.daily.sunrise || data.daily.sunrise;
+                data.daily.sunset = astroData.daily.sunset || data.daily.sunset;
             }
         }
 
         return data;
+
     } catch (error) {
         console.error("Failed to fetch weather:", error);
         return null;
