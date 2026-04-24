@@ -270,8 +270,9 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         return formatTimeOffset(dateObj, timezone);
     };
 
-    const moonriseTimeText = daily?.moonrise?.[0] ? daily.moonrise[0].slice(11, 16) : '--:--';
-    const moonsetTimeText = daily?.moonset?.[0] ? daily.moonset[0].slice(11, 16) : '--:--';
+    const todayMoon = SunCalc.getMoonTimes(targetLocalDate, lat, lon);
+    const moonriseTimeText = formatMoonTime(todayMoon.rise);
+    const moonsetTimeText = formatMoonTime(todayMoon.set);
 
 
     let moonProgressPct = 0;
