@@ -181,6 +181,7 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         let allEvents = [];
         if (dailyData?.moonrise && dailyData?.moonset) {
             const apiEvents = [];
+            // API returns ISO strings, ensure they are treated as dates
             dailyData.moonrise.forEach(t => t && apiEvents.push({ type: 'rise', time: new Date(t) }));
             dailyData.moonset.forEach(t => t && apiEvents.push({ type: 'set', time: new Date(t) }));
             allEvents = apiEvents.sort((a, b) => a.time - b.time);
@@ -198,11 +199,40 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
                 return events;
             }).sort((a, b) => a.time - b.time);
         }
-        let rise = allEvents.filter(e => e.type === 'rise' && e.time <= date).pop()?.time || allEvents.find(e => e.type === 'rise' && e.time > date)?.time;
-        let set = allEvents.filter(e => e.type === 'set' && e.time <= date).pop()?.time || allEvents.find(e => e.type === 'set' && e.time > date)?.time;
+
+        const now = date.getTime();
+        let rise = null;
+        let set = null;
+
+        // Find the "current" or "next" visibility period (Rise -> Set)
+        // 1. Find the latest rise that happened before now
+        const prevRise = allEvents.filter(e => e.type === 'rise' && e.time.getTime() <= now).pop();
+        // 2. Find the set that follows that specific rise
+        const nextSetAfterRise = prevRise ? allEvents.find(e => e.type === 'set' && e.time.getTime() > prevRise.time.getTime()) : null;
+        
+        // 3. Find the latest set that happened before now
+        const prevSet = allEvents.filter(e => e.type === 'set' && e.time.getTime() <= now).pop();
+
+        // Determination:
+        if (prevRise && (!prevSet || prevRise.time.getTime() > prevSet.time.getTime())) {
+            // Moon is currently UP
+            rise = prevRise.time;
+            set = nextSetAfterRise ? nextSetAfterRise.time : null;
+        } else {
+            // Moon is currently DOWN
+            // Show the next upcoming rise and its corresponding set
+            const nextRise = allEvents.find(e => e.type === 'rise' && e.time.getTime() > now);
+            if (nextRise) {
+                rise = nextRise.time;
+                set = allEvents.find(e => e.type === 'set' && e.time.getTime() > nextRise.time.getTime())?.time;
+            } else {
+                // Last resort fallback to previous period
+                rise = prevRise ? prevRise.time : null;
+                set = nextSetAfterRise ? nextSetAfterRise.time : null;
+            }
+        }
+
         const todayTimes = SunCalc.getMoonTimes(date, lat, lon);
-        if (!rise) rise = todayTimes.rise;
-        if (!set) set = todayTimes.set;
         return { rise, set, alwaysUp: todayTimes.alwaysUp, alwaysDown: todayTimes.alwaysDown };
     };
 
@@ -240,8 +270,9 @@ export default function WeatherDetails({ lat = 25.033, lon = 121.565, current, d
         return formatTimeOffset(dateObj, timezone);
     };
 
-    const moonriseTimeText = formatMoonTime(moonEvents.rise);
-    const moonsetTimeText = formatMoonTime(moonEvents.set);
+    const moonriseTimeText = daily?.moonrise?.[0] ? daily.moonrise[0].slice(11, 16) : '--:--';
+    const moonsetTimeText = daily?.moonset?.[0] ? daily.moonset[0].slice(11, 16) : '--:--';
+
 
     let moonProgressPct = 0;
     if (moonEvents.rise && moonEvents.set) {
